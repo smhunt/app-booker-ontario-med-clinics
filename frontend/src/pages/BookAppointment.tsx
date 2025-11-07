@@ -308,25 +308,25 @@ export function BookAppointment() {
 
       {/* Step 1: Provider Selection */}
       {currentStep === 'provider' && (
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
           <h2 className="text-xl font-semibold mb-4">Select a Provider</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             {providers.map((provider) => (
               <button
                 key={provider.id}
                 onClick={() => handleProviderSelect(provider)}
-                className="text-left p-4 border border-gray-300 rounded-lg hover:border-primary-500 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 flex gap-4 items-start"
+                className="text-left p-4 border-2 border-gray-300 rounded-lg hover:border-primary-500 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 flex gap-4 items-center"
               >
                 {provider.photoUrl && (
                   <img
                     src={provider.photoUrl}
                     alt={provider.fullName}
-                    className="w-16 h-16 rounded-full flex-shrink-0"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex-shrink-0"
                   />
                 )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{provider.fullName}</h3>
-                  <p className="text-gray-600 text-sm">{provider.credentials}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg truncate">{provider.fullName}</h3>
+                  <p className="text-gray-600 text-sm truncate">{provider.credentials}</p>
                   {provider.team && (
                     <p className="text-gray-500 text-sm mt-1">Team {provider.team}</p>
                   )}
@@ -339,13 +339,22 @@ export function BookAppointment() {
 
       {/* Step 2: Date & Time Selection */}
       {currentStep === 'datetime' && selectedProvider && (
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
           <h2 className="text-xl font-semibold mb-4">Select Date & Time</h2>
 
-          <div className="mb-4">
-            <p className="text-sm text-gray-600">
-              Provider: <strong>{selectedProvider.fullName}</strong>
-            </p>
+          {/* Selected Provider Summary */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+            {selectedProvider.photoUrl && (
+              <img
+                src={selectedProvider.photoUrl}
+                alt={selectedProvider.fullName}
+                className="w-12 h-12 rounded-full flex-shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-600">Provider</p>
+              <p className="font-semibold truncate">{selectedProvider.fullName}</p>
+            </div>
           </div>
 
           {/* Appointment Type */}
@@ -376,12 +385,34 @@ export function BookAppointment() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Date *
             </label>
-            <DatePicker
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-              minDaysAhead={1}
-              maxDaysAhead={90}
-            />
+            {!selectedDate ? (
+              <DatePicker
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+                minDaysAhead={1}
+                maxDaysAhead={90}
+              />
+            ) : (
+              <div className="border border-primary-500 rounded-lg p-4 bg-primary-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Selected Date</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedDate('');
+                      setSelectedTime('');
+                    }}
+                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                  >
+                    Change Date
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Time Selection */}
@@ -395,18 +426,18 @@ export function BookAppointment() {
                   <div className="spinner" aria-label="Loading times" />
                 </div>
               ) : timeSlots.length > 0 ? (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                   {timeSlots.map((slot) => (
                     <button
                       key={slot.time}
                       onClick={() => setSelectedTime(slot.time)}
                       disabled={!slot.available}
-                      className={`px-3 py-2 rounded border ${
+                      className={`px-3 py-3 rounded-lg font-medium text-sm transition-all ${
                         selectedTime === slot.time
-                          ? 'bg-primary-600 text-white border-primary-600'
+                          ? 'bg-primary-600 text-white border-2 border-primary-600 shadow-lg scale-105'
                           : slot.available
-                          ? 'bg-white border-gray-300 hover:border-primary-500'
-                          : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                          ? 'bg-white border-2 border-gray-300 hover:border-primary-400 hover:bg-primary-50 text-gray-900'
+                          : 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
                     >
                       {slot.time}
@@ -424,9 +455,16 @@ export function BookAppointment() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Appointment Modality *
             </label>
-            <div className="flex gap-4">
+            <div className="grid grid-cols-3 gap-2">
               {(['in-person', 'video', 'phone'] as const).map((mod) => (
-                <label key={mod} className="flex items-center">
+                <label
+                  key={mod}
+                  className={`flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                    modality === mod
+                      ? 'border-primary-600 bg-primary-50'
+                      : 'border-gray-300 hover:border-primary-400'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="modality"
@@ -435,26 +473,30 @@ export function BookAppointment() {
                     onChange={(e) =>
                       setModality(e.target.value as typeof modality)
                     }
-                    className="mr-2"
+                    className="sr-only"
                   />
-                  <span className="capitalize">{mod}</span>
+                  <span className={`capitalize font-medium ${
+                    modality === mod ? 'text-primary-700' : 'text-gray-700'
+                  }`}>
+                    {mod}
+                  </span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setCurrentStep('provider')}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
             >
               Back
             </button>
             <button
               onClick={handleDateTimeSelect}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+              className="w-full sm:flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium"
             >
-              Next
+              Continue to Patient Info
             </button>
           </div>
         </div>

@@ -160,7 +160,7 @@ router.get('/reports/bookings', async (req, res) => {
       if (endDate) where.date.lte = new Date(endDate as string);
     }
 
-    const [total, byStatus, byProvider] = await Promise.all([
+    const [total, byStatus, byProvider, byModality, bookingsWithProvider] = await Promise.all([
       prisma.booking.count({ where }),
       prisma.booking.groupBy({
         by: ['status'],
@@ -172,16 +172,54 @@ router.get('/reports/bookings', async (req, res) => {
         where,
         _count: true,
       }),
+      prisma.booking.groupBy({
+        by: ['modality'],
+        where,
+        _count: true,
+      }),
+      prisma.booking.findMany({
+        where,
+        include: { provider: true },
+        select: { provider: { select: { displayName: true } } },
+      }),
     ]);
 
+    // Map provider IDs to names
+    const providerNameMap: Record<string, string> = {};
+    bookingsWithProvider.forEach((b) => {
+      providerNameMap[b.provider.displayName] = b.provider.displayName;
+    });
+
+    // Count by provider name
+    const providerBookings = await prisma.booking.findMany({
+      where,
+      include: { provider: true },
+    });
+
+    const byProviderNamed: Record<string, number> = {};
+    providerBookings.forEach((b) => {
+      const name = b.provider.displayName;
+      byProviderNamed[name] = (byProviderNamed[name] || 0) + 1;
+    });
+
+    // Format the stats
+    const byStatusObj: Record<string, number> = {};
+    byStatus.forEach((item) => {
+      byStatusObj[item.status] = item._count;
+    });
+
+    const byModalityObj: Record<string, number> = {};
+    byModality.forEach((item) => {
+      byModalityObj[item.modality] = item._count;
+    });
+
     res.json({
-      period: {
-        startDate: startDate || 'all',
-        endDate: endDate || 'all',
+      stats: {
+        total,
+        byStatus: byStatusObj,
+        byProvider: byProviderNamed,
+        byModality: byModalityObj,
       },
-      total,
-      byStatus,
-      byProvider,
     });
   } catch (error) {
     res.status(500).json({
