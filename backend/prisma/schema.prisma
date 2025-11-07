@@ -33,6 +33,7 @@ model Provider {
   rosterStatus        String    @default("closed") // open or closed
   acceptsNewPatients  Boolean   @default(false)
   bio                 String?
+  photoUrl            String?   // Profile photo URL
   clinicId            String
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt

@@ -315,13 +315,22 @@ export function BookAppointment() {
               <button
                 key={provider.id}
                 onClick={() => handleProviderSelect(provider)}
-                className="text-left p-4 border border-gray-300 rounded-lg hover:border-primary-500 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="text-left p-4 border border-gray-300 rounded-lg hover:border-primary-500 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 flex gap-4 items-start"
               >
-                <h3 className="font-semibold text-lg">{provider.fullName}</h3>
-                <p className="text-gray-600 text-sm">{provider.credentials}</p>
-                {provider.team && (
-                  <p className="text-gray-500 text-sm mt-1">Team {provider.team}</p>
+                {provider.photoUrl && (
+                  <img
+                    src={provider.photoUrl}
+                    alt={provider.fullName}
+                    className="w-16 h-16 rounded-full flex-shrink-0"
+                  />
                 )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{provider.fullName}</h3>
+                  <p className="text-gray-600 text-sm">{provider.credentials}</p>
+                  {provider.team && (
+                    <p className="text-gray-500 text-sm mt-1">Team {provider.team}</p>
+                  )}
+                </div>
               </button>
             ))}
           </div>

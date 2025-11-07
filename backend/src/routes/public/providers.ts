@@ -29,6 +29,7 @@ router.get('/', async (req, res) => {
         rosterStatus: p.rosterStatus,
         acceptsNewPatients: p.acceptsNewPatients,
         bio: p.bio,
+        photoUrl: p.photoUrl,
         workingHours: p.workingHours,
         clinic: {
           name: p.clinic.name,

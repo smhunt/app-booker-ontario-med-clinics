@@ -5,6 +5,7 @@ export interface Provider {
   fullName: string;
   credentials: string;
   team?: string;
+  photoUrl?: string;
   workingHours?: {
     monday?: string;
     tuesday?: string;
