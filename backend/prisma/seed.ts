@@ -18,7 +18,7 @@ async function main() {
   }
 
   // Load seed data
-  const seedDataPath = path.join(__dirname, '../../seed/seedData.json');
+  const seedDataPath = path.join(__dirname, 'seed/seedData.json');
   const seedData = JSON.parse(fs.readFileSync(seedDataPath, 'utf-8'));
 
   // Clear existing data
