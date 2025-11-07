@@ -1,13 +1,16 @@
 FROM node:18-alpine
 
+# Install build dependencies for native modules (bcrypt)
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm install --ignore-scripts
+# Install dependencies (allow bcrypt to build)
+RUN npm install
 
 # Copy source code
 COPY . .
