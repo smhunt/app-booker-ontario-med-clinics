@@ -5,8 +5,10 @@ import type {
   AppointmentType,
   TimeSlot,
   CreateBookingRequest,
+  Booking,
 } from '../types';
 import { format, addDays } from 'date-fns';
+import { DatePicker } from '../components/DatePicker';
 
 type Step = 'provider' | 'datetime' | 'patient' | 'confirm' | 'success';
 
@@ -42,6 +44,11 @@ export function BookAppointment() {
   const [error, setError] = useState('');
   const [bookingId, setBookingId] = useState('');
 
+  // Patient identification
+  const [identifiedEmail, setIdentifiedEmail] = useState('');
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
+  const [showIdentifyPrompt, setShowIdentifyPrompt] = useState(false);
+
   // Load providers and appointment types on mount
   useEffect(() => {
     const loadData = async () => {
@@ -57,7 +64,39 @@ export function BookAppointment() {
       }
     };
     loadData();
+
+    // Check if patient is identified
+    const storedEmail = localStorage.getItem('patientEmail');
+    if (storedEmail) {
+      setIdentifiedEmail(storedEmail);
+      loadPatientBookings(storedEmail);
+    } else {
+      setShowIdentifyPrompt(true);
+    }
   }, []);
+
+  const loadPatientBookings = async (email: string) => {
+    try {
+      const response = await publicApi.getPatientBookings(email);
+      setUpcomingBookings(response.bookings);
+    } catch (err) {
+      console.error('Failed to load patient bookings', err);
+    }
+  };
+
+  const handleIdentifyPatient = async (email: string) => {
+    if (!email) return;
+
+    localStorage.setItem('patientEmail', email);
+    setIdentifiedEmail(email);
+    setShowIdentifyPrompt(false);
+
+    // Pre-fill email if available
+    setPatientInfo((prev) => ({ ...prev, email }));
+
+    // Load their bookings
+    await loadPatientBookings(email);
+  };
 
   // Load availability when provider and date are selected
   useEffect(() => {
@@ -167,6 +206,62 @@ export function BookAppointment() {
         Book an Appointment
       </h1>
 
+      {/* Patient identification prompt */}
+      {showIdentifyPrompt && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-blue-900 mb-2">
+            Have you booked with us before?
+          </h3>
+          <p className="text-sm text-blue-800 mb-3">
+            Enter your email to see your upcoming appointments and pre-fill your information.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="your.email@example.com"
+              className="flex-1 px-3 py-2 border border-blue-300 rounded-md text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleIdentifyPatient((e.target as HTMLInputElement).value);
+                }
+              }}
+            />
+            <button
+              onClick={(e) => {
+                const input = e.currentTarget.previousSibling as HTMLInputElement;
+                handleIdentifyPatient(input.value);
+              }}
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm"
+            >
+              Find My Info
+            </button>
+            <button
+              onClick={() => setShowIdentifyPrompt(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
+            >
+              Skip
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming appointments banner */}
+      {identifiedEmail && upcomingBookings.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-green-900 mb-2">
+            Your Upcoming Appointments
+          </h3>
+          <div className="space-y-2">
+            {upcomingBookings.slice(0, 2).map((booking) => (
+              <div key={booking.id} className="text-sm text-green-800">
+                <strong>{format(new Date(booking.date), 'MMMM d, yyyy')}</strong> at{' '}
+                {booking.time} - {booking.provider?.name} ({booking.appointmentType?.name})
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {error && (
         <div
           className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4"
@@ -270,21 +365,14 @@ export function BookAppointment() {
           {/* Date Selection */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date *
+              Select Date *
             </label>
-            <select
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              required
-            >
-              <option value="">Select a date</option>
-              {availableDates.map((date) => (
-                <option key={date} value={date}>
-                  {format(new Date(date), 'EEEE, MMMM d, yyyy')}
-                </option>
-              ))}
-            </select>
+            <DatePicker
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              minDaysAhead={1}
+              maxDaysAhead={90}
+            />
           </div>
 
           {/* Time Selection */}

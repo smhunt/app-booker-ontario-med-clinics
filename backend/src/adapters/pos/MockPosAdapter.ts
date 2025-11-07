@@ -1,4 +1,5 @@
 import { IPosAdapter, Slot, Booking } from './IPosAdapter';
+import { PrismaClient } from '@prisma/client';
 import logger from '../../utils/logger';
 
 /**
@@ -7,18 +8,52 @@ import logger from '../../utils/logger';
  */
 export class MockPosAdapter implements IPosAdapter {
   private mockBookings: Map<string, Booking> = new Map();
+  private prisma = new PrismaClient();
 
   async getProviderAvailability(providerId: string, date: string): Promise<Slot[]> {
     logger.info('MockPosAdapter: Getting availability', { providerId, date });
 
-    // Generate mock availability slots
+    // Get provider with working hours and OAB windows
+    const provider = await this.prisma.provider.findUnique({
+      where: { id: providerId },
+    });
+
+    if (!provider) {
+      return [];
+    }
+
+    // Determine day of week from date
+    const dateObj = new Date(date);
+    const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    // Get OAB windows for this provider and day
+    const oabWindows = await this.prisma.oabWindow.findMany({
+      where: {
+        providerId,
+        dayOfWeek,
+        isActive: true,
+      },
+    });
+
+    if (oabWindows.length === 0) {
+      logger.info('No OAB windows for provider on this day', { providerId, dayOfWeek });
+      return [];
+    }
+
+    // Generate slots based on OAB windows
     const slots: Slot[] = [];
-    const startHour = 9;
-    const endHour = 16;
     const slotDuration = 15;
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += slotDuration) {
+    for (const window of oabWindows) {
+      const [startHour, startMinute] = window.startTime.split(':').map(Number);
+      const [endHour, endMinute] = window.endTime.split(':').map(Number);
+
+      const startMinutes = startHour * 60 + startMinute;
+      const endMinutes = endHour * 60 + endMinute;
+
+      for (let minutes = startMinutes; minutes < endMinutes; minutes += slotDuration) {
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
         // Randomly mark some slots as unavailable (simulating existing bookings)
@@ -34,6 +69,7 @@ export class MockPosAdapter implements IPosAdapter {
       }
     }
 
+    logger.info('Generated slots', { providerId, date, count: slots.length });
     return slots;
   }
 

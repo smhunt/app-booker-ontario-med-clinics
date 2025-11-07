@@ -80,6 +80,12 @@ export const publicApi = {
   cancelBooking: async (bookingId: string): Promise<void> => {
     await api.delete(`/bookings/${bookingId}`);
   },
+
+  // Get patient bookings by email
+  getPatientBookings: async (email: string): Promise<{ patient: { name: string; email: string }; bookings: Booking[] }> => {
+    const { data } = await api.get(`/bookings/patient/${encodeURIComponent(email)}`);
+    return data;
+  },
 };
 
 // Auth API
