@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
         name: type.name,
         duration: type.duration,
         description: type.description,
+        isCommon: type.isCommon,
       })),
     });
   } catch (error) {
@@ -55,6 +56,7 @@ router.get('/:id', async (req, res) => {
         name: appointmentType.name,
         duration: appointmentType.duration,
         description: appointmentType.description,
+        isCommon: appointmentType.isCommon,
       },
     });
   } catch (error) {

@@ -14,6 +14,7 @@ import availabilityRoutes from './routes/public/availability';
 import bookingsRoutes from './routes/public/bookings';
 import adminBookingsRoutes from './routes/admin/bookings';
 import adminAuditLogsRoutes from './routes/admin/auditLogs';
+import adminReportsRoutes from './routes/admin/reports';
 
 const app = express();
 
@@ -102,6 +103,7 @@ app.use('/bookings', bookingsRoutes);
 // Admin routes
 app.use('/admin/bookings', adminBookingsRoutes);
 app.use('/admin/audit-logs', adminAuditLogsRoutes);
+app.use('/admin/reports', adminReportsRoutes);
 
 // 404 handler
 app.use((req, res) => {

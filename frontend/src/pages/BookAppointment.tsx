@@ -7,10 +7,16 @@ import type {
   CreateBookingRequest,
   Booking,
 } from '../types';
-import { format, addDays } from 'date-fns';
+import { format, addDays, parseISO } from 'date-fns';
 import { DatePicker } from '../components/DatePicker';
 
 type Step = 'provider' | 'datetime' | 'patient' | 'confirm' | 'success';
+
+// Helper to parse date string in local timezone (avoids UTC midnight offset issues)
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export function BookAppointment() {
   // Step management
@@ -48,6 +54,10 @@ export function BookAppointment() {
   const [identifiedEmail, setIdentifiedEmail] = useState('');
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [showIdentifyPrompt, setShowIdentifyPrompt] = useState(false);
+
+  // Appointment type search
+  const [appointmentTypeSearch, setAppointmentTypeSearch] = useState('');
+  const [showAllTypes, setShowAllTypes] = useState(false);
 
   // Load providers and appointment types on mount
   useEffect(() => {
@@ -254,7 +264,7 @@ export function BookAppointment() {
           <div className="space-y-2">
             {upcomingBookings.slice(0, 2).map((booking) => (
               <div key={booking.id} className="text-sm text-green-800">
-                <strong>{format(new Date(booking.date), 'MMMM d, yyyy')}</strong> at{' '}
+                <strong>{format(parseLocalDate(booking.date), 'MMMM d, yyyy')}</strong> at{' '}
                 {booking.time} - {booking.provider?.name} ({booking.appointmentType?.name})
               </div>
             ))}
@@ -378,25 +388,111 @@ export function BookAppointment() {
 
           {/* Appointment Type */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Appointment Type *
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              What type of appointment do you need? *
             </label>
-            <select
-              value={selectedAppointmentType?.id || ''}
-              onChange={(e) => {
-                const type = appointmentTypes.find((t) => t.id === e.target.value);
-                setSelectedAppointmentType(type || null);
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              required
-            >
-              <option value="">Select appointment type</option>
-              {appointmentTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name} ({type.duration} min)
-                </option>
-              ))}
-            </select>
+
+            {/* Common appointment types as buttons */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {appointmentTypes
+                .filter((type) => type.isCommon)
+                .map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAppointmentType(type);
+                      setAppointmentTypeSearch('');
+                      setShowAllTypes(false);
+                    }}
+                    className={`
+                      p-4 text-left border-2 rounded-lg transition-all
+                      ${
+                        selectedAppointmentType?.id === type.id
+                          ? 'border-primary-600 bg-primary-50 shadow-md'
+                          : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <div className="font-semibold text-gray-900">{type.name}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {type.duration} minutes
+                    </div>
+                    {type.description && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {type.description}
+                      </div>
+                    )}
+                  </button>
+                ))}
+            </div>
+
+            {/* Search for other types */}
+            <div className="mb-3">
+              <button
+                type="button"
+                onClick={() => setShowAllTypes(!showAllTypes)}
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                {showAllTypes ? '− Hide other appointment types' : '+ Looking for something else?'}
+              </button>
+            </div>
+
+            {showAllTypes && (
+              <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                <input
+                  type="text"
+                  placeholder="Search appointment types..."
+                  value={appointmentTypeSearch}
+                  onChange={(e) => setAppointmentTypeSearch(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {appointmentTypes
+                    .filter((type) =>
+                      !type.isCommon &&
+                      (appointmentTypeSearch === '' ||
+                       type.name.toLowerCase().includes(appointmentTypeSearch.toLowerCase()) ||
+                       type.description?.toLowerCase().includes(appointmentTypeSearch.toLowerCase()))
+                    )
+                    .map((type) => (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAppointmentType(type);
+                          setAppointmentTypeSearch('');
+                          setShowAllTypes(false);
+                        }}
+                        className={`
+                          w-full p-3 text-left border rounded-lg transition-all
+                          ${
+                            selectedAppointmentType?.id === type.id
+                              ? 'border-primary-600 bg-primary-50'
+                              : 'border-gray-200 hover:border-primary-300 hover:bg-white'
+                          }
+                        `}
+                      >
+                        <div className="font-medium text-gray-900">{type.name}</div>
+                        <div className="text-xs text-gray-600">
+                          {type.duration} min {type.description && `• ${type.description}`}
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {selectedAppointmentType && !selectedAppointmentType.isCommon && (
+              <div className="mt-3 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+                <div className="text-sm font-medium text-primary-900">
+                  Selected: {selectedAppointmentType.name}
+                </div>
+                <div className="text-xs text-primary-700">
+                  {selectedAppointmentType.duration} minutes
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Date Selection */}
@@ -417,7 +513,7 @@ export function BookAppointment() {
                   <div>
                     <p className="text-sm text-gray-600">Selected Date</p>
                     <p className="text-lg font-semibold text-gray-900">
-                      {format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}
+                      {format(parseLocalDate(selectedDate), 'EEEE, MMMM d, yyyy')}
                     </p>
                   </div>
                   <button
@@ -700,7 +796,7 @@ export function BookAppointment() {
               <h3 className="font-semibold text-gray-900">Appointment</h3>
               <p className="text-gray-600">{selectedAppointmentType.name}</p>
               <p className="text-gray-600">
-                {format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')} at{' '}
+                {format(parseLocalDate(selectedDate), 'EEEE, MMMM d, yyyy')} at{' '}
                 {selectedTime}
               </p>
               <p className="text-gray-600 capitalize">Modality: {modality}</p>

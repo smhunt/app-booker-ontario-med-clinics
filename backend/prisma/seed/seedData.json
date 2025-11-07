@@ -461,14 +461,41 @@
     }
   ],
   "appointmentTypes": [
+    {"name": "Annual Physical", "duration": 45, "description": "Comprehensive annual health examination", "isCommon": true},
+    {"name": "Follow-up Visit", "duration": 15, "description": "Follow-up consultation", "isCommon": true},
+    {"name": "Sick Visit", "duration": 20, "description": "For acute illness or symptoms", "isCommon": true},
+    {"name": "Immunization", "duration": 10, "description": "Vaccines and immunizations", "isCommon": true},
     {"name": "New Patient Visit", "duration": 30, "description": "Initial consultation for new patients"},
-    {"name": "Follow-up Visit", "duration": 15, "description": "Follow-up consultation"},
     {"name": "Chronic Disease Management", "duration": 30, "description": "For ongoing management of chronic conditions"},
-    {"name": "Annual Physical", "duration": 45, "description": "Comprehensive annual health examination"},
-    {"name": "Urgent Care", "duration": 20, "description": "For urgent but non-emergency issues"}
+    {"name": "Urgent Care", "duration": 20, "description": "For urgent but non-emergency issues"},
+    {"name": "Prenatal Care", "duration": 30, "description": "Pregnancy-related appointments"},
+    {"name": "Well Baby/Child Visit", "duration": 20, "description": "Routine pediatric checkups"},
+    {"name": "Mental Health Consultation", "duration": 30, "description": "Mental health and counseling"},
+    {"name": "Blood Pressure Check", "duration": 10, "description": "Quick blood pressure monitoring"},
+    {"name": "Diabetes Management", "duration": 30, "description": "Diabetes care and monitoring"},
+    {"name": "Asthma/COPD Follow-up", "duration": 20, "description": "Respiratory condition management"},
+    {"name": "Prescription Renewal", "duration": 10, "description": "Medication review and renewal"},
+    {"name": "Lab Results Review", "duration": 15, "description": "Discuss test results"},
+    {"name": "Minor Procedure", "duration": 30, "description": "Wart removal, cyst drainage, etc."},
+    {"name": "Wound Care", "duration": 20, "description": "Dressing changes and wound management"},
+    {"name": "Travel Medicine", "duration": 20, "description": "Travel vaccines and health advice"},
+    {"name": "Sports Physical", "duration": 20, "description": "Physical examination for sports participation"},
+    {"name": "Contraception Consultation", "duration": 20, "description": "Birth control options and management"},
+    {"name": "Sexual Health", "duration": 20, "description": "STI testing and sexual health concerns"},
+    {"name": "Skin Concern", "duration": 15, "description": "Rashes, moles, and skin conditions"},
+    {"name": "Joint/Muscle Pain", "duration": 20, "description": "Musculoskeletal concerns"},
+    {"name": "Allergy Consultation", "duration": 20, "description": "Allergy assessment and management"},
+    {"name": "Weight Management", "duration": 30, "description": "Weight loss and nutrition counseling"},
+    {"name": "Smoking Cessation", "duration": 20, "description": "Support for quitting smoking"},
+    {"name": "Sleep Concerns", "duration": 20, "description": "Insomnia and sleep disorder assessment"},
+    {"name": "Medication Review", "duration": 20, "description": "Comprehensive medication assessment"},
+    {"name": "Pre-operative Assessment", "duration": 30, "description": "Medical clearance before surgery"},
+    {"name": "Post-operative Follow-up", "duration": 20, "description": "Recovery check after surgery"},
+    {"name": "Geriatric Assessment", "duration": 45, "description": "Comprehensive senior health evaluation"},
+    {"name": "Palliative Care Consultation", "duration": 30, "description": "End-of-life care planning"}
   ],
   "adminUsers": [
-    {"email": "admin@ildertonhealth-demo.ca", "password": "Admin123!", "role": "admin", "name": "System Administrator"},
-    {"email": "staff@ildertonhealth-demo.ca", "password": "Staff123!", "role": "staff", "name": "Clinical Staff"}
+    {"email": "admin@ildertonhealth-demo.ca", "password": "Admin123", "role": "admin", "name": "System Administrator"},
+    {"email": "staff@ildertonhealth-demo.ca", "password": "Staff123", "role": "staff", "name": "Clinical Staff"}
   ]
 }

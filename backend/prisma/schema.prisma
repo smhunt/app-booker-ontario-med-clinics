@@ -77,6 +77,7 @@ model AppointmentType {
   duration    Int       // Duration in minutes
   description String?
   isActive    Boolean   @default(true)
+  isCommon    Boolean   @default(false) // Commonly used appointment types shown as buttons
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

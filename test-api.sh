@@ -84,14 +84,14 @@ echo "-----------------------"
 cat > /tmp/admin_login.json << 'EOF'
 {
   "email": "admin@ildertonhealth-demo.ca",
-  "password": "Admin123!"
+  "password": "Admin123"
 }
 EOF
 
 cat > /tmp/staff_login.json << 'EOF'
 {
   "email": "staff@ildertonhealth-demo.ca",
-  "password": "Staff123!"
+  "password": "Staff123"
 }
 EOF
 
@@ -217,7 +217,7 @@ if [ -n "$ADMIN_TOKEN" ]; then
     fi
 
     # Test stats endpoint
-    response=$(curl -s -w "\n%{http_code}" -X GET "http://localhost:8080/admin/bookings/reports/bookings" \
+    response=$(curl -s -w "\n%{http_code}" -X GET "http://localhost:8080/admin/reports/bookings" \
         -H "Authorization: Bearer $ADMIN_TOKEN")
     status_code=$(echo "$response" | tail -n 1)
 

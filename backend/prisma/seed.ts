@@ -76,6 +76,7 @@ async function main() {
         duration: typeData.duration,
         description: typeData.description,
         isActive: true,
+        isCommon: typeData.isCommon || false,
       },
     });
     appointmentTypes.push(type);
@@ -152,8 +153,8 @@ async function main() {
   console.log(`   - Admin Users: ${seedData.adminUsers.length}`);
   console.log('');
   console.log('Default login credentials:');
-  console.log('   Admin: admin@ildertonhealth-demo.ca / Admin123!');
-  console.log('   Staff: staff@ildertonhealth-demo.ca / Staff123!');
+  console.log('   Admin: admin@ildertonhealth-demo.ca / Admin123');
+  console.log('   Staff: staff@ildertonhealth-demo.ca / Staff123');
 }
 
 main()

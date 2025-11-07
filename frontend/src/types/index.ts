@@ -31,6 +31,7 @@ export interface AppointmentType {
   name: string;
   duration: number;
   description?: string;
+  isCommon?: boolean;
 }
 
 export interface TimeSlot {
