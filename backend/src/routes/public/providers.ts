@@ -22,13 +22,14 @@ router.get('/', async (req, res) => {
     res.json({
       providers: providers.map((p) => ({
         id: p.id,
-        name: p.name,
-        displayName: p.displayName,
+        fullName: p.name,
+        credentials: p.displayName,
         specialty: p.specialty,
         team: p.team,
         rosterStatus: p.rosterStatus,
         acceptsNewPatients: p.acceptsNewPatients,
         bio: p.bio,
+        workingHours: p.workingHours,
         clinic: {
           name: p.clinic.name,
           type: p.clinic.type,
@@ -63,8 +64,8 @@ router.get('/:id', async (req, res) => {
     res.json({
       provider: {
         id: provider.id,
-        name: provider.name,
-        displayName: provider.displayName,
+        fullName: provider.name,
+        credentials: provider.displayName,
         specialty: provider.specialty,
         team: provider.team,
         workingHours: provider.workingHours,

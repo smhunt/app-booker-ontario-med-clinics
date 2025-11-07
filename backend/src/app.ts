@@ -9,6 +9,7 @@ import { phiGuard } from './middleware/phiGuard';
 // Import routes
 import authRoutes from './routes/auth';
 import providersRoutes from './routes/public/providers';
+import appointmentTypesRoutes from './routes/public/appointmentTypes';
 import availabilityRoutes from './routes/public/availability';
 import bookingsRoutes from './routes/public/bookings';
 import adminBookingsRoutes from './routes/admin/bookings';
@@ -94,6 +95,7 @@ app.get('/health', (req, res) => {
 // Public routes
 app.use('/auth', authRoutes);
 app.use('/providers', providersRoutes);
+app.use('/appointment-types', appointmentTypesRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/bookings', bookingsRoutes);
 
