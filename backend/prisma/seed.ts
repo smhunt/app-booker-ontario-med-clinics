@@ -59,6 +59,7 @@ async function main() {
         rosterStatus: providerData.rosterStatus,
         acceptsNewPatients: providerData.acceptsNewPatients,
         bio: providerData.bio,
+        photoUrl: providerData.photoUrl,
         clinicId: clinic.id,
       },
     });

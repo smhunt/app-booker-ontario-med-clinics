@@ -24,7 +24,8 @@
       "workingHours": {"monday": ["09:00", "17:00"], "tuesday": ["09:00", "17:00"], "wednesday": ["09:00", "17:00"], "thursday": ["09:00", "17:00"], "friday": ["09:00", "15:00"]},
       "rosterStatus": "open",
       "acceptsNewPatients": true,
-      "bio": "Dr. Mitchell has been practicing family medicine for over 15 years."
+      "bio": "Dr. Mitchell has been practicing family medicine for over 15 years.",
+      "photoUrl": "https://ui-avatars.com/api/?name=Sarah+Mitchell&background=b6e3f4&color=1e40af&size=256&bold=true"
     },
     {
       "name": "Dr. James Chen",
@@ -34,7 +35,8 @@
       "workingHours": {"monday": ["10:00", "18:00"], "tuesday": ["10:00", "18:00"], "wednesday": ["10:00", "18:00"], "thursday": ["10:00", "18:00"], "friday": ["10:00", "16:00"]},
       "rosterStatus": "open",
       "acceptsNewPatients": true,
-      "bio": "Dr. Chen specializes in chronic disease management."
+      "bio": "Dr. Chen specializes in chronic disease management.",
+      "photoUrl": "https://ui-avatars.com/api/?name=James+Chen&background=c0aede&color=5b21b6&size=256&bold=true"
     },
     {
       "name": "Dr. Emily Rodriguez",
@@ -44,7 +46,8 @@
       "workingHours": {"monday": ["08:00", "16:00"], "tuesday": ["08:00", "16:00"], "wednesday": ["08:00", "16:00"], "thursday": ["08:00", "16:00"], "friday": ["08:00", "12:00"]},
       "rosterStatus": "open",
       "acceptsNewPatients": true,
-      "bio": "Dr. Rodriguez has expertise in pediatric care."
+      "bio": "Dr. Rodriguez has expertise in pediatric care.",
+      "photoUrl": "https://ui-avatars.com/api/?name=Emily+Rodriguez&background=ffd5dc&color=be123c&size=256&bold=true"
     },
     {
       "name": "Dr. Michael Thompson",
@@ -54,7 +57,8 @@
       "workingHours": {"monday": ["09:00", "17:00"], "wednesday": ["09:00", "17:00"], "thursday": ["09:00", "17:00"], "friday": ["09:00", "17:00"]},
       "rosterStatus": "closed",
       "acceptsNewPatients": false,
-      "bio": "Dr. Thompson focuses on geriatric medicine."
+      "bio": "Dr. Thompson focuses on geriatric medicine.",
+      "photoUrl": "https://ui-avatars.com/api/?name=Michael+Thompson&background=d1d4f9&color=3730a3&size=256&bold=true"
     },
     {
       "name": "Dr. Lisa Patel",
@@ -64,7 +68,8 @@
       "workingHours": {"tuesday": ["09:00", "17:00"], "wednesday": ["09:00", "17:00"], "thursday": ["09:00", "17:00"], "friday": ["09:00", "17:00"]},
       "rosterStatus": "open",
       "acceptsNewPatients": true,
-      "bio": "Dr. Patel is experienced in women's health and preventive care."
+      "bio": "Dr. Patel is experienced in women's health and preventive care.",
+      "photoUrl": "https://ui-avatars.com/api/?name=Lisa+Patel&background=ffdfbf&color=c2410c&size=256&bold=true"
     },
     {
       "name": "Dr. Robert Johnson",
@@ -74,7 +79,8 @@
       "workingHours": {"monday": ["08:00", "16:00"], "tuesday": ["08:00", "16:00"], "wednesday": ["08:00", "16:00"], "thursday": ["08:00", "16:00"]},
       "rosterStatus": "open",
       "acceptsNewPatients": true,
-      "bio": "Dr. Johnson provides comprehensive family medical services."
+      "bio": "Dr. Johnson provides comprehensive family medical services.",
+      "photoUrl": "https://ui-avatars.com/api/?name=Robert+Johnson&background=c5e4ca&color=15803d&size=256&bold=true"
     }
   ],
   "patients": [
