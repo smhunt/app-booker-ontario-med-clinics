@@ -96,10 +96,10 @@ export function Login() {
           </p>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>
-              <strong>Admin:</strong> admin@example.com / admin123
+              <strong>Admin:</strong> admin@ildertonhealth-demo.ca / Admin123!
             </li>
             <li>
-              <strong>Staff:</strong> staff@example.com / staff123
+              <strong>Staff:</strong> staff@ildertonhealth-demo.ca / Staff123!
             </li>
           </ul>
         </div>

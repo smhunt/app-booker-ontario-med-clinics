@@ -317,12 +317,27 @@ export function BookAppointment() {
                 onClick={() => handleProviderSelect(provider)}
                 className="text-left p-4 border-2 border-gray-300 rounded-lg hover:border-primary-500 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 flex gap-4 items-center"
               >
-                {provider.photoUrl && (
+                {provider.photoUrl ? (
                   <img
                     src={provider.photoUrl}
                     alt={provider.fullName}
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex-shrink-0"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex-shrink-0 bg-gray-100"
+                    onError={(e) => {
+                      // Fallback to initials if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling;
+                      if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                    }}
                   />
+                ) : null}
+                {provider.photoUrl && (
+                  <div
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex-shrink-0 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-xl hidden"
+                    aria-hidden="true"
+                  >
+                    {provider.fullName.split(' ').map(n => n[0]).join('')}
+                  </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg truncate">{provider.fullName}</h3>
@@ -344,12 +359,16 @@ export function BookAppointment() {
 
           {/* Selected Provider Summary */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-            {selectedProvider.photoUrl && (
+            {selectedProvider.photoUrl ? (
               <img
                 src={selectedProvider.photoUrl}
                 alt={selectedProvider.fullName}
-                className="w-12 h-12 rounded-full flex-shrink-0"
+                className="w-12 h-12 rounded-full flex-shrink-0 bg-gray-100"
               />
+            ) : (
+              <div className="w-12 h-12 rounded-full flex-shrink-0 bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
+                {selectedProvider.fullName.split(' ').map(n => n[0]).join('')}
+              </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-600">Provider</p>
