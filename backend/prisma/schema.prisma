@@ -1,0 +1,150 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Clinic {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // e.g., "Family Health Team"
+  address     String?
+  phone       String?
+  email       String?
+  hours       Json     // Working hours by day
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  providers   Provider[]
+}
+
+model Provider {
+  id                  String    @id @default(uuid())
+  name                String
+  displayName         String
+  specialty           String    @default("Family Medicine")
+  team                String    // A, B, or C
+  workingHours        Json      // {mon: ["09:00", "16:00"], ...}
+  rosterStatus        String    @default("closed") // open or closed
+  acceptsNewPatients  Boolean   @default(false)
+  bio                 String?
+  clinicId            String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  clinic              Clinic    @relation(fields: [clinicId], references: [id])
+  bookings            Booking[]
+  patients            Patient[] @relation("PreferredProvider")
+
+  @@index([clinicId])
+}
+
+model Patient {
+  id                      String    @id @default(uuid())
+  name                    String
+  dob                     DateTime
+  gender                  String    // male, female, nonbinary
+  fakeMrn                 String    @unique // TEST- prefix
+  email                   String
+  smsNumber               String?
+  postalCode              String
+  rostered                Boolean   @default(false)
+  consentNotifications    Boolean   @default(true)
+  canReceiveSms           Boolean   @default(true)
+  notificationChannel     String    @default("email") // email, sms, voice
+  languages               Json      @default("[\"en\"]") // Array of language codes
+  chronicConditions       Json      @default("[]")     // Array of conditions
+  preferredProviderId     String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  preferredProvider       Provider? @relation("PreferredProvider", fields: [preferredProviderId], references: [id])
+  bookings                Booking[]
+
+  @@index([preferredProviderId])
+  @@index([fakeMrn])
+}
+
+model AppointmentType {
+  id          String    @id @default(uuid())
+  name        String
+  duration    Int       // Duration in minutes
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bookings    Booking[]
+}
+
+model Booking {
+  id                  String          @id @default(uuid())
+  providerId          String
+  patientId           String
+  appointmentTypeId   String
+  date                DateTime
+  time                String          // HH:MM format
+  modality            String          // in-person, video, phone
+  status              String          @default("pending") // pending, confirmed, cancelled
+  reason              String?
+  notes               String?
+  cancellationReason  String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  provider            Provider        @relation(fields: [providerId], references: [id])
+  patient             Patient         @relation(fields: [patientId], references: [id])
+  appointmentType     AppointmentType @relation(fields: [appointmentTypeId], references: [id])
+
+  @@index([providerId, date])
+  @@index([patientId])
+  @@index([status])
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String?   // null for anonymous/patient actions
+  userRole    String?   // admin, clinic_staff, patient
+  action      String    // create_booking, update_booking, cancel_booking, etc.
+  resource    String    // booking, provider, patient, etc.
+  resourceId  String?
+  payload     Json      // Redacted payload
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([timestamp])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hashed with bcrypt
+  name      String
+  role      String   // admin, clinic_staff
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model OabWindow {
+  id          String    @id @default(uuid())
+  providerId  String
+  dayOfWeek   String    // monday, tuesday, etc.
+  startTime   String    // HH:MM
+  endTime     String    // HH:MM
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([providerId, dayOfWeek])
+}
