@@ -32,5 +32,8 @@
     "fhir"
   ],
   "author": "Ontario Medical Clinics",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "patch-package": "^8.0.0"
+  }
 }
