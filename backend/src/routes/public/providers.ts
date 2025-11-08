@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * GET /providers
  * List all active providers
  */
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res): Promise<void> => {
   try {
     const providers = await prisma.provider.findMany({
       include: {
@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
  * GET /providers/:id
  * Get a specific provider
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res): Promise<void> => {
   try {
     const provider = await prisma.provider.findUnique({
       where: { id: req.params.id },
@@ -59,7 +59,8 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!provider) {
-      return res.status(404).json({ error: 'Provider not found' });
+      res.status(404).json({ error: 'Provider not found' });
+      return;
     }
 
     res.json({

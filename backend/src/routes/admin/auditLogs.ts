@@ -24,7 +24,7 @@ const querySchema = z.object({
  * GET /admin/audit-logs
  * Query audit logs
  */
-router.get('/', async (req, res) => {
+router.get('/', async (req, res): Promise<void> => {
   try {
     const filters = querySchema.parse(req.query);
 
@@ -38,10 +38,11 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid query parameters',
         details: error.errors,
       });
+      return;
     }
 
     res.status(500).json({

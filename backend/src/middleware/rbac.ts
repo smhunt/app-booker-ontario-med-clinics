@@ -6,12 +6,13 @@ import logger from '../utils/logger';
  * Enforces role requirements on admin endpoints
  */
 export function requireRole(...allowedRoles: string[]) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+      return;
     }
 
     if (!allowedRoles.includes(req.user.role)) {
@@ -23,12 +24,13 @@ export function requireRole(...allowedRoles: string[]) {
         ip: req.ip,
       });
 
-      return res.status(403).json({
+      res.status(403).json({
         error: 'Forbidden',
         message: 'Insufficient permissions',
         required: allowedRoles,
         current: req.user.role,
       });
+      return;
     }
 
     next();

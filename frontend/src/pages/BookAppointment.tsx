@@ -7,7 +7,7 @@ import type {
   CreateBookingRequest,
   Booking,
 } from '../types';
-import { format, addDays, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { DatePicker } from '../components/DatePicker';
 
 type Step = 'provider' | 'datetime' | 'patient' | 'confirm' | 'success';
@@ -203,12 +203,6 @@ export function BookAppointment() {
     setBookingId('');
     setError('');
   };
-
-  // Generate next 14 days for date selection
-  const availableDates = Array.from({ length: 14 }, (_, i) => {
-    const date = addDays(new Date(), i + 1);
-    return format(date, 'yyyy-MM-dd');
-  });
 
   return (
     <div className="max-w-4xl mx-auto">

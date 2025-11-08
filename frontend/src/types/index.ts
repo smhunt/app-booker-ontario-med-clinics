@@ -49,8 +49,14 @@ export interface Booking {
   modality: 'in-person' | 'video' | 'phone';
   status: 'pending' | 'approved' | 'declined' | 'cancelled';
   reason?: string;
-  provider?: Provider;
-  appointmentType?: AppointmentType;
+  provider?: {
+    name: string;
+    specialty?: string;
+  };
+  appointmentType?: {
+    name: string;
+    duration: number;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

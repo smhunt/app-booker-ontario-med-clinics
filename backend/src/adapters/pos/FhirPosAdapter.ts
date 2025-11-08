@@ -13,11 +13,10 @@ import logger from '../../utils/logger';
  * - FHIR Schedule: https://www.hl7.org/fhir/schedule.html
  */
 export class FhirPosAdapter implements IPosAdapter {
-  private baseUrl: string;
-
   constructor() {
-    this.baseUrl = process.env.FHIR_BASE_URL || 'http://localhost:8090/fhir';
-    logger.warn('FhirPosAdapter initialized (STUB ONLY - not functional)');
+    // baseUrl would be used when FHIR integration is implemented
+    const _baseUrl = process.env.FHIR_BASE_URL || 'http://localhost:8090/fhir';
+    logger.warn('FhirPosAdapter initialized (STUB ONLY - not functional)', { baseUrl: _baseUrl });
   }
 
   async getProviderAvailability(providerId: string, date: string): Promise<Slot[]> {
@@ -41,7 +40,7 @@ export class FhirPosAdapter implements IPosAdapter {
     );
   }
 
-  async updateAppointment(id: string, updates: Partial<Booking>): Promise<void> {
+  async updateAppointment(id: string, _updates: Partial<Booking>): Promise<void> {
     logger.warn('FhirPosAdapter.updateAppointment called (stub)', { id });
 
     throw new Error(

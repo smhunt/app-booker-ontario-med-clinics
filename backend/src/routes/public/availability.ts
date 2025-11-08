@@ -14,7 +14,7 @@ const availabilitySchema = z.object({
  * Get available appointment slots for a provider on a specific date
  * Query params: providerId, date (YYYY-MM-DD)
  */
-router.get('/', async (req, res) => {
+router.get('/', async (req, res): Promise<void> => {
   try {
     const params = availabilitySchema.parse(req.query);
 
@@ -30,10 +30,11 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid parameters',
         details: error.errors,
       });
+      return;
     }
 
     res.status(500).json({

@@ -62,7 +62,7 @@ export class BookingService {
         date: booking.date,
         time: booking.time,
         modality: booking.modality,
-        reason: booking.reason,
+        reason: booking.reason || undefined,
         status: booking.status,
       });
 

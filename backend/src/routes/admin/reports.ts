@@ -19,15 +19,10 @@ router.get('/bookings', async (req, res) => {
       if (endDate) where.date.lte = new Date(endDate as string);
     }
 
-    const [total, byStatus, byProvider, byModality] = await Promise.all([
+    const [total, byStatus, byModality] = await Promise.all([
       prisma.booking.count({ where }),
       prisma.booking.groupBy({
         by: ['status'],
-        where,
-        _count: true,
-      }),
-      prisma.booking.groupBy({
-        by: ['providerId'],
         where,
         _count: true,
       }),

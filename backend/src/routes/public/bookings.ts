@@ -29,7 +29,7 @@ const createBookingSchema = z.object({
  * POST /bookings
  * Create a new booking
  */
-router.post('/', publicRateLimit, async (req, res) => {
+router.post('/', publicRateLimit, async (req, res): Promise<void> => {
   try {
     const data = createBookingSchema.parse(req.body);
 
@@ -72,9 +72,10 @@ router.post('/', publicRateLimit, async (req, res) => {
     }
 
     if (!patientId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Either patientId or patientInfo must be provided',
       });
+      return;
     }
 
     const booking = await BookingService.createBooking({
@@ -107,10 +108,11 @@ router.post('/', publicRateLimit, async (req, res) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid booking data',
         details: error.errors,
       });
+      return;
     }
 
     res.status(500).json({
@@ -124,7 +126,7 @@ router.post('/', publicRateLimit, async (req, res) => {
  * GET /bookings/patient/:email
  * Get upcoming bookings for a patient by email
  */
-router.get('/patient/:email', async (req, res) => {
+router.get('/patient/:email', async (req, res): Promise<void> => {
   try {
     const email = decodeURIComponent(req.params.email);
 
@@ -134,7 +136,8 @@ router.get('/patient/:email', async (req, res) => {
     });
 
     if (!patient) {
-      return res.json({ bookings: [] });
+      res.json({ bookings: [] });
+      return;
     }
 
     // Get upcoming bookings
@@ -186,7 +189,7 @@ router.get('/patient/:email', async (req, res) => {
  * GET /bookings/:id
  * Get booking details
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res): Promise<void> => {
   try {
     const booking = await prisma.booking.findUnique({
       where: { id: req.params.id },
@@ -198,7 +201,8 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
+      res.status(404).json({ error: 'Booking not found' });
+      return;
     }
 
     res.json({

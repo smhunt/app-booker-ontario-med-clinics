@@ -26,7 +26,7 @@ export class TwilioAdapter implements INotificationAdapter {
     }
   }
 
-  async sendEmail(options: EmailOptions): Promise<void> {
+  async sendEmail(_options: EmailOptions): Promise<void> {
     logger.warn('TwilioAdapter.sendEmail called (stub) - use SendGridAdapter for email');
     throw new Error('TwilioAdapter does not support email. Use SendGridAdapter.');
   }

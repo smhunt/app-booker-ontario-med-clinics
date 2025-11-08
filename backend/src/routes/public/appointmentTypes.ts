@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * GET /appointment-types
  * List all active appointment types
  */
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res): Promise<void> => {
   try {
     const appointmentTypes = await prisma.appointmentType.findMany({
       where: {
@@ -40,14 +40,15 @@ router.get('/', async (req, res) => {
  * GET /appointment-types/:id
  * Get a specific appointment type
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res): Promise<void> => {
   try {
     const appointmentType = await prisma.appointmentType.findUnique({
       where: { id: req.params.id },
     });
 
     if (!appointmentType) {
-      return res.status(404).json({ error: 'Appointment type not found' });
+      res.status(404).json({ error: 'Appointment type not found' });
+      return;
     }
 
     res.json({

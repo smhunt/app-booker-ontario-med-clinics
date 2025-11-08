@@ -7,7 +7,7 @@ import logger from '../utils/logger';
  *
  * TODO(privacy): Privacy officer must review PIA before enabling PHI storage
  */
-export function phiGuard(req: Request, res: Response, next: NextFunction) {
+export function phiGuard(req: Request, res: Response, next: NextFunction): void {
   const phipaReady = process.env.CANADA_PHIPA_READY === 'true';
 
   // Check if request body contains attempts to store real patient data
@@ -18,11 +18,12 @@ export function phiGuard(req: Request, res: Response, next: NextFunction) {
       ip: req.ip,
     });
 
-    return res.status(403).json({
+    res.status(403).json({
       error: 'PHI storage not enabled',
       message: 'CANADA_PHIPA_READY must be true and security checklist must be completed before storing real patient data.',
       details: 'See security/REVIEW_REQUIRED.md for manual approval steps.',
     });
+    return;
   }
 
   // Log PHI-related operations when flag is disabled

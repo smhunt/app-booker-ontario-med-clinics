@@ -19,7 +19,7 @@ const loginSchema = z.object({
  * POST /auth/login
  * Authenticate user and return JWT token
  */
-router.post('/login', authRateLimit, async (req, res) => {
+router.post('/login', authRateLimit, async (req, res): Promise<void> => {
   try {
     const { email, password } = loginSchema.parse(req.body);
 
@@ -30,20 +30,22 @@ router.post('/login', authRateLimit, async (req, res) => {
 
     if (!user || !user.isActive) {
       logger.warn('Login failed: user not found or inactive', { email });
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Invalid credentials',
         message: 'Email or password is incorrect',
       });
+      return;
     }
 
     // Verify password
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       logger.warn('Login failed: invalid password', { email });
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Invalid credentials',
         message: 'Email or password is incorrect',
       });
+      return;
     }
 
     // Generate token
@@ -81,10 +83,11 @@ router.post('/login', authRateLimit, async (req, res) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid input',
         details: error.errors,
       });
+      return;
     }
 
     logger.error('Login error', {

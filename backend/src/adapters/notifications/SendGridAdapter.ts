@@ -45,12 +45,12 @@ export class SendGridAdapter implements INotificationAdapter {
     // });
   }
 
-  async sendSMS(options: SmsOptions): Promise<void> {
+  async sendSMS(_options: SmsOptions): Promise<void> {
     logger.warn('SendGridAdapter.sendSMS called - use TwilioAdapter for SMS');
     throw new Error('SendGridAdapter does not support SMS. Use TwilioAdapter.');
   }
 
-  async sendVoice(options: VoiceOptions): Promise<void> {
+  async sendVoice(_options: VoiceOptions): Promise<void> {
     logger.warn('SendGridAdapter.sendVoice called - use TwilioAdapter for voice');
     throw new Error('SendGridAdapter does not support voice. Use TwilioAdapter.');
   }

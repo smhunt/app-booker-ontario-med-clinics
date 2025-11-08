@@ -12,6 +12,7 @@ export interface AuthUser {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: AuthUser;
@@ -22,14 +23,15 @@ declare global {
 /**
  * Verify JWT token and attach user to request
  */
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export function authenticate(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
+    res.status(401).json({
       error: 'Unauthorized',
       message: 'Missing or invalid authorization header',
     });
+    return;
   }
 
   const token = authHeader.substring(7);
@@ -45,7 +47,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
       error: error instanceof Error ? error.message : 'Unknown error',
     });
 
-    return res.status(401).json({
+    res.status(401).json({
       error: 'Unauthorized',
       message: 'Invalid or expired token',
     });
@@ -56,8 +58,6 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
  * Generate JWT token for user
  */
 export function generateToken(user: AuthUser): string {
-  const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
-
   return jwt.sign(
     {
       id: user.id,
@@ -66,6 +66,6 @@ export function generateToken(user: AuthUser): string {
       name: user.name,
     },
     JWT_SECRET,
-    { expiresIn }
+    { expiresIn: (process.env.JWT_EXPIRES_IN || '24h') as any } // eslint-disable-line @typescript-eslint/no-explicit-any
   );
 }
