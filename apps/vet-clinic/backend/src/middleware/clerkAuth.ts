@@ -23,17 +23,38 @@ declare global {
   }
 }
 
+// Check if Clerk is configured
+const isClerkConfigured = (): boolean => {
+  return !!(process.env.CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY);
+};
+
 /**
  * Clerk middleware that attaches auth state to request
  * Use this at app level to enable Clerk auth checking
+ * Gracefully skips if Clerk is not configured
  */
-export const clerkAuth = clerkMiddleware();
+export const clerkAuth = (req: Request, res: Response, next: NextFunction): void => {
+  if (!isClerkConfigured()) {
+    // Skip Clerk middleware if not configured
+    next();
+    return;
+  }
+  clerkMiddleware()(req, res, next);
+};
 
 /**
  * Require pet owner to be signed in via Clerk
- * Returns 401 if not authenticated
+ * Returns 401 if not authenticated, or skips if Clerk not configured
  */
-export const requirePetOwner = requireAuth();
+export const requirePetOwner = (req: Request, res: Response, next: NextFunction): void => {
+  if (!isClerkConfigured()) {
+    // Skip auth requirement if Clerk not configured (dev mode)
+    logger.warn('Clerk not configured - skipping pet owner auth requirement');
+    next();
+    return;
+  }
+  requireAuth()(req, res, next);
+};
 
 /**
  * Extract pet owner info from Clerk auth and attach to request

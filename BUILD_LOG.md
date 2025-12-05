@@ -16,6 +16,49 @@ A session-by-session record of development progress on the Online Appointment Bo
 
 ---
 
+## Session 3 (Continued) - Dec 5, 2025 ~8:45 AM
+
+**Focus**: Add breed typeahead, clickable appointment types, Clerk planning
+
+### Added
+
+**Breed Database** (`apps/vet-clinic/frontend/src/data/breeds.ts`):
+- Comprehensive static breed lists for all species
+- 200+ dog breeds (AKC groups + designer breeds)
+- 50+ cat breeds (long-hair, short-hair, color patterns)
+- 40+ rabbit breeds (small, medium, large, giant)
+- 70+ bird breeds (parrots, finches, doves, poultry)
+- 80+ reptile breeds (lizards, snakes, turtles, tortoises)
+- Other pets (rodents, ferrets, hedgehogs, amphibians)
+- `searchBreeds()` function with fuzzy matching + aliases
+
+**Breed Typeahead Component** (`apps/vet-clinic/frontend/src/components/BreedTypeahead.tsx`):
+- Autocomplete dropdown with keyboard navigation
+- Species-aware filtering
+- Alias support (e.g., "Budgie" → "Budgerigar")
+- "Use anyway" option for unlisted breeds
+- Accessible (ARIA roles, keyboard support)
+
+**Clickable Appointment Types**:
+- Home page services now link to `/book?type={id}`
+- BookAppointment reads URL param to pre-select type
+- Hover effects and visual feedback
+
+**Clerk Integration Plan** (`docs/CLERK_SETUP.md`):
+- Step-by-step setup guide
+- Environment variable configuration
+- Webhook setup for user sync
+- PHIPA compliance considerations
+- Troubleshooting guide
+
+**Fixes**:
+- `clerkAuth.ts` - Gracefully skips middleware when Clerk not configured
+
+### Commits
+- (pending) feat: add breed typeahead and clickable appointment types
+
+---
+
 ## Session 3 - Dec 5, 2025 ~8:00 AM
 
 **Focus**: Build complete veterinary clinic suite (monorepo expansion)
@@ -255,9 +298,20 @@ Based on git history, recent work included:
 
 ## Screenshot Opportunities
 
-- [ ] Patient dashboard with Clerk sign-in
-- [ ] Booking flow end-to-end
-- [ ] Admin dashboard
+- [x] Patient dashboard with Clerk sign-in - `docs/screenshots/02-booking-clerk-signin.png`
+- [x] Booking flow end-to-end - `docs/screenshots/02-booking-clerk-signin.png` (shows 4-step wizard)
+- [x] Admin dashboard - `docs/screenshots/04-admin-dashboard-no-data.png`
+
+### Captured Screenshots (Session 4 - Dec 5, 2025)
+
+| Screenshot | Description |
+|------------|-------------|
+| [01-home-page.png](docs/screenshots/01-home-page.png) | Landing page with "How It Works" steps and compliance notices |
+| [02-booking-clerk-signin.png](docs/screenshots/02-booking-clerk-signin.png) | Booking wizard with Clerk passwordless auth (Apple/Google/Slack/Email) |
+| [03-staff-login.png](docs/screenshots/03-staff-login.png) | Staff login page with demo credentials |
+| [04-admin-dashboard-no-data.png](docs/screenshots/04-admin-dashboard-no-data.png) | Admin dashboard (API unavailable in Docker browser) |
+
+**Note**: Screenshots captured using Playwright MCP browser. Some API-dependent views show error states due to Docker networking (browser can't reach localhost:8080).
 
 ---
 

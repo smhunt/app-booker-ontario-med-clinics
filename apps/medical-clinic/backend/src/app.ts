@@ -26,9 +26,11 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
+// Also allow host.docker.internal for Docker-based browser testing
+corsOrigins.push('http://host.docker.internal:3001', 'http://host.docker.internal:3000');
 app.use(cors({
-  origin: corsOrigin,
+  origin: corsOrigins,
   credentials: true,
 }));
 

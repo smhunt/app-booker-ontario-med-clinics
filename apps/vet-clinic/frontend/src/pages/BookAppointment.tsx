@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format, addDays } from 'date-fns';
 import { publicApi } from '../lib/api';
 import { useClerkContext, SignIn, SignedIn, SignedOut } from '../contexts/ClerkContext';
+import { BreedTypeahead } from '../components/BreedTypeahead';
 import type { Veterinarian, AppointmentType, TimeSlot } from '../types';
 
 type Step = 'pet' | 'vet' | 'datetime' | 'confirm';
 
 export function BookAppointment() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isSignedIn, user } = useClerkContext();
+
+  // Check for pre-selected appointment type from URL
+  const preSelectedTypeId = searchParams.get('type');
 
   const [step, setStep] = useState<Step>('pet');
   const [loading, setLoading] = useState(false);
@@ -52,12 +57,20 @@ export function BookAppointment() {
         ]);
         setVeterinarians(vets);
         setAppointmentTypes(types);
+
+        // Pre-select appointment type from URL if provided
+        if (preSelectedTypeId) {
+          const matchedType = types.find((t: AppointmentType) => t.id === preSelectedTypeId);
+          if (matchedType) {
+            setSelectedType(matchedType.id);
+          }
+        }
       } catch (err) {
         console.error('Failed to load data:', err);
       }
     }
     loadData();
-  }, []);
+  }, [preSelectedTypeId]);
 
   // Pre-fill owner info if signed in
   useEffect(() => {
@@ -270,7 +283,7 @@ export function BookAppointment() {
                 <select
                   value={petInfo.species}
                   onChange={(e) =>
-                    setPetInfo({ ...petInfo, species: e.target.value })
+                    setPetInfo({ ...petInfo, species: e.target.value, breed: '' })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 >
@@ -286,13 +299,11 @@ export function BookAppointment() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Breed
                 </label>
-                <input
-                  type="text"
+                <BreedTypeahead
+                  species={petInfo.species}
                   value={petInfo.breed}
-                  onChange={(e) =>
-                    setPetInfo({ ...petInfo, breed: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  onChange={(breed) => setPetInfo({ ...petInfo, breed })}
+                  placeholder="Start typing to search breeds..."
                 />
               </div>
               <div>

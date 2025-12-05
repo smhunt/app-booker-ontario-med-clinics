@@ -60,6 +60,7 @@ export function Home() {
       {/* Services Section */}
       <section>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Services</h2>
+        <p className="text-gray-600 mb-4">Click a service to book an appointment</p>
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="spinner" />
@@ -67,18 +68,36 @@ export function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {appointmentTypes.map((type) => (
-              <div
+              <Link
                 key={type.id}
-                className="p-4 bg-white rounded-lg shadow-sm border border-gray-200"
+                to={`/book?type=${type.id}`}
+                className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all group cursor-pointer"
               >
-                <h3 className="font-medium text-gray-900">{type.name}</h3>
+                <div className="flex items-start justify-between">
+                  <h3 className="font-medium text-gray-900 group-hover:text-primary-600">
+                    {type.name}
+                  </h3>
+                  <svg
+                    className="w-5 h-5 text-gray-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </div>
                 <p className="text-sm text-gray-500 mt-1">
                   {type.description || `${type.duration} minute appointment`}
                 </p>
-                <p className="text-xs text-primary-600 mt-2">
-                  {type.duration} minutes
+                <p className="text-xs text-primary-600 mt-2 font-medium">
+                  {type.duration} minutes • Click to book
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         )}
