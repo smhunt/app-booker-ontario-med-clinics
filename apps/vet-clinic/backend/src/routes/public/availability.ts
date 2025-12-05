@@ -1,0 +1,47 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { BookingService } from '../../services/bookingService';
+
+const router = Router();
+
+const availabilitySchema = z.object({
+  veterinarianId: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+/**
+ * GET /availability
+ * Get available appointment slots for a veterinarian on a specific date
+ * Query params: veterinarianId, date (YYYY-MM-DD)
+ */
+router.get('/', async (req, res): Promise<void> => {
+  try {
+    const params = availabilitySchema.parse(req.query);
+
+    const slots = await BookingService.getAvailability(
+      params.veterinarianId,
+      params.date
+    );
+
+    res.json({
+      veterinarianId: params.veterinarianId,
+      date: params.date,
+      slots: slots.filter((s) => s.available),
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        error: 'Invalid parameters',
+        details: error.errors,
+      });
+      return;
+    }
+
+    res.status(500).json({
+      error: 'Failed to fetch availability',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+export default router;

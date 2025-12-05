@@ -8,10 +8,140 @@ A session-by-session record of development progress on the Online Appointment Bo
 
 | Metric | Value |
 |--------|-------|
-| Total Sessions | 2 |
-| Total User Messages | ~12 |
-| Total Lines of Code | ~4,000+ |
+| Total Sessions | 3 |
+| Total User Messages | ~15 |
+| Total Lines of Code | ~8,000+ |
 | Test Count | 81 tests passing |
+| Apps | 2 (Medical Clinic, Vet Clinic) |
+
+---
+
+## Session 3 - Dec 5, 2025 ~8:00 AM
+
+**Focus**: Build complete veterinary clinic suite (monorepo expansion)
+
+**Starting state**:
+- Medical clinic app fully functional
+- Monorepo structure ready for expansion
+- Previous session completed load testing
+
+**Duration**: ~90 mins
+**User messages**: ~5
+
+### Created - Veterinary Clinic Backend (`apps/vet-clinic/backend`)
+
+**Infrastructure**:
+- `package.json` - Express API with Clerk, Prisma, Zod, bcrypt
+- `tsconfig.json` - ES2022 target, commonjs module
+- `Dockerfile` - Node 18-slim, port 8081
+- `.env.example` - Environment config template
+- `prisma/schema.prisma` - Custom output to `src/generated/prisma`
+
+**Database Models**:
+- `Veterinarian` - 6 vets (2 General Practice, 2 Surgery, 1 Dentistry, 1 Exotic)
+- `PetOwner` - 10 owners with notification preferences
+- `Pet` - 25 pets (12 dogs, 8 cats, 2 rabbits, 2 birds, 1 reptile)
+- `Booking` - Pet appointment bookings
+- `AppointmentType` - 15 vet-specific types
+- `Admin` - Staff users
+- `AuditLog` - PIPEDA-compliant audit trail
+
+**Routes**:
+- Public: `/veterinarians`, `/appointment-types`, `/availability`, `/bookings`
+- Owner (Clerk auth): `/owner/pets`, `/owner/bookings`
+- Admin (JWT): `/admin/bookings`, `/admin/audit-logs`, `/admin/reports`
+
+**Middleware**:
+- `clerkAuth.ts` - Clerk passwordless for pet owners
+- `auth.ts` - JWT for staff
+- `rbac.ts` - Role-based access control
+- `phiGuard.ts` - PIPEDA compliance (vs PHIPA for medical)
+- `rateLimit.ts` - Rate limiting
+
+**Services**:
+- `bookingService.ts` - Booking logic with PoS sync & notifications
+- `auditService.ts` - Audit logging with PII redaction
+
+**Adapters** (mock implementations):
+- `MockPosAdapter.ts` - EMR sync stub
+- `MockNotificationAdapter.ts` - Email/SMS/Voice stub
+
+### Created - Veterinary Clinic Frontend (`apps/vet-clinic/frontend`)
+
+**Infrastructure**:
+- `package.json` - React 18, react-router-dom, axios, date-fns, Clerk
+- `vite.config.ts` - Port 3002, proxy to 8081
+- `tailwind.config.js` - Green primary color scheme (🐾 branding)
+- `tsconfig.json` - Vite client types
+
+**Pages**:
+- `Home.tsx` - Landing page with service overview
+- `BookAppointment.tsx` - 4-step wizard (Pet → Vet → DateTime → Confirm)
+- `OwnerDashboard.tsx` - Pet owner appointment management
+- `Login.tsx` - Staff authentication
+- `admin/Dashboard.tsx` - Stats overview (bookings, pets, owners)
+- `admin/Bookings.tsx` - Booking management with approve/decline
+- `admin/AuditLogs.tsx` - PIPEDA audit trail viewer
+
+**Components**:
+- `Layout.tsx` - Navigation with vet branding
+- `ProtectedRoute.tsx` - Auth guard for admin routes
+- `ClerkContext.tsx` - Safe Clerk wrapper (handles unconfigured state)
+
+**Contexts**:
+- `AuthContext.tsx` - Staff JWT auth
+- `ClerkContext.tsx` - Pet owner passwordless auth
+
+### Created - Docker Integration
+
+**`apps/vet-clinic/docker-compose.yml`**:
+- `vet-db` - PostgreSQL on port 5434
+- `vet-backend` - Express API on port 8081
+- `vet-frontend` - React on port 3002
+
+**`apps/medical-clinic/docker-compose.yml`**:
+- Extracted from root for independent operation
+
+**Root `docker-compose.yml`**:
+- Both clinics can run together
+- Medical: ports 3001/8080/5433
+- Vet: ports 3002/8081/5434
+
+### Key Technical Decisions
+
+1. **Separate Prisma outputs**: Each app has its own generated client to avoid conflicts
+   - Medical: `@prisma/client` (default)
+   - Vet: `src/generated/prisma` (custom output)
+
+2. **Pet/Owner relationship**: 1 owner → many pets (vs single patient in medical)
+
+3. **PIPEDA vs PHIPA**: Vet clinic uses PIPEDA compliance (pet data not PHI)
+
+4. **Species-specific appointments**: `requiresSpecies` field on AppointmentType
+
+### Seed Data Summary
+
+**Medical Clinic** (Ilderton Family Health):
+- 6 Family Medicine physicians
+- 25 patients (various chronic conditions)
+- 32 appointment types
+
+**Vet Clinic** (Pawsitive Care):
+- 6 veterinarians (General, Surgery, Dentistry, Exotic)
+- 10 pet owners
+- 25 pets (dogs, cats, rabbits, birds, reptile)
+- 15 appointment types
+
+### Services Running
+- Medical Backend: http://localhost:8080
+- Medical Frontend: http://localhost:3001
+- Medical DB: PostgreSQL port 5433
+- Vet Backend: http://localhost:8081 (when started)
+- Vet Frontend: http://localhost:3002 (when started)
+- Vet DB: PostgreSQL port 5434
+
+### Commits
+- (pending) feat: add complete veterinary clinic suite
 
 ---
 
