@@ -1,0 +1,135 @@
+// Veterinary clinic Prisma schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Veterinarian (DVM, VMD, etc.)
+model Veterinarian {
+  id                   String   @id @default(uuid())
+  name                 String
+  displayName          String?
+  email                String   @unique
+  password             String
+  role                 String   @default("veterinarian")
+  specialty            String   // e.g., "Small Animal", "Large Animal", "Exotic", "Surgery"
+  licenseNumber        String?
+  acceptsNewClients    Boolean  @default(true)
+  team                 String?
+  languages            String[] @default(["en"])
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  bookings             Booking[]
+}
+
+// Pet Owner (PIPEDA, not PHIPA)
+model PetOwner {
+  id                   String   @id @default(uuid())
+  name                 String
+  email                String?
+  phone                String?
+  address              String?
+  postalCode           String?
+  consentNotifications Boolean  @default(true)
+  canReceiveSMS        Boolean  @default(false)
+  notificationChannel  String   @default("email") // 'email', 'sms', 'voice'
+  languages            String[] @default(["en"])
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  pets                 Pet[]
+}
+
+// Pet (the "patient" in veterinary context)
+model Pet {
+  id                   String   @id @default(uuid())
+  name                 String
+  species              String   // 'dog', 'cat', 'bird', 'rabbit', 'reptile', etc.
+  breed                String?
+  dateOfBirth          DateTime?
+  sex                  String?  // 'male', 'female', 'neutered_male', 'spayed_female'
+  weight               Float?   // in kg
+  microchipNumber      String?
+  allergies            String[] @default([])
+  chronicConditions    String[] @default([])
+  ownerId              String
+  owner                PetOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  bookings             Booking[]
+
+  @@index([ownerId])
+}
+
+// Appointment types (vet-specific)
+model AppointmentType {
+  id                   String   @id @default(uuid())
+  name                 String   // e.g., "Wellness Exam", "Vaccination", "Surgery", "Grooming", "Boarding"
+  duration             Int      // in minutes
+  description          String?
+  isActive             Boolean  @default(true)
+  isCommon             Boolean  @default(false)
+  requiresSpecies      String[] @default([]) // e.g., ["dog", "cat"] if species-specific
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  bookings             Booking[]
+}
+
+// Bookings (similar to medical but for pets)
+model Booking {
+  id                   String          @id @default(uuid())
+  petId                String
+  pet                  Pet             @relation(fields: [petId], references: [id], onDelete: Cascade)
+  veterinarianId       String
+  veterinarian         Veterinarian    @relation(fields: [veterinarianId], references: [id])
+  appointmentTypeId    String
+  appointmentType      AppointmentType @relation(fields: [appointmentTypeId], references: [id])
+  date                 String          // YYYY-MM-DD
+  time                 String          // HH:MM
+  modality             String          @default("in-person") // 'in-person', 'video' (telemedicine), 'phone'
+  status               String          @default("approved")   // 'pending', 'approved', 'declined', 'cancelled'
+  reason               String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([petId])
+  @@index([veterinarianId])
+  @@index([date])
+}
+
+// Admin users
+model Admin {
+  id                   String   @id @default(uuid())
+  name                 String
+  email                String   @unique
+  password             String
+  role                 String   @default("admin")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// Audit logs
+model AuditLog {
+  id                   String   @id @default(uuid())
+  userId               String?
+  action               String
+  resourceType         String
+  resourceId           String?
+  ipAddress            String?
+  timestamp            DateTime @default(now())
+  details              Json?
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([resourceType])
+}

@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: oab_password
       POSTGRES_DB: oab_dev
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./apps/medical-clinic/backend
       dockerfile: Dockerfile
     container_name: oab-backend
     ports:
@@ -35,26 +35,29 @@ services:
       - NOTIFICATION_ADAPTER=mock
       - LOG_LEVEL=info
       - LOG_REDACTION_ENABLED=true
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3001
+      - CLERK_SECRET_KEY=sk_test_sY4JRyTVCgLbocgpvFiW9jkthJYOrtLYIxowlUEreT
+      - CLERK_PUBLISHABLE_KEY=pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./apps/medical-clinic/backend:/app
       - /app/node_modules
     command: npm run dev
 
   frontend:
     build:
-      context: ./frontend
+      context: ./apps/medical-clinic/frontend
       dockerfile: Dockerfile
     container_name: oab-frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - VITE_API_URL=http://localhost:8080
+      - VITE_CLERK_PUBLISHABLE_KEY=pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ
     volumes:
-      - ./frontend:/app
+      - ./apps/medical-clinic/frontend:/app
       - /app/node_modules
     command: npm run dev -- --host
 
