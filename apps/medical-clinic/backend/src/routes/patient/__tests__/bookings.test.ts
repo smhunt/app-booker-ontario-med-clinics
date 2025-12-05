@@ -59,7 +59,7 @@ describe('Patient Bookings Routes', () => {
   };
 
   const testPatient = {
-    id: 'patient_uuid_123',
+    id: '11111111-1111-1111-1111-111111111111',
     name: 'Test Patient',
     email: 'patient@example.com',
     clerkUserId: 'clerk_user_123',
@@ -76,18 +76,18 @@ describe('Patient Bookings Routes', () => {
   };
 
   const testProvider = {
-    id: 'provider_uuid_123',
+    id: '22222222-2222-2222-2222-222222222222',
     displayName: 'Dr. Test Provider',
   };
 
   const testAppointmentType = {
-    id: 'appt_type_uuid_123',
+    id: '33333333-3333-3333-3333-333333333333',
     name: 'Follow-up',
     duration: 15,
   };
 
   const testBooking = {
-    id: 'booking_uuid_123',
+    id: '44444444-4444-4444-4444-444444444444',
     date: new Date('2025-01-15'),
     time: '10:00',
     modality: 'in-person',
@@ -157,8 +157,8 @@ describe('Patient Bookings Routes', () => {
 
   describe('POST /patient/bookings', () => {
     const validBookingData = {
-      providerId: 'provider_uuid_123',
-      appointmentTypeId: 'appt_type_uuid_123',
+      providerId: '22222222-2222-2222-2222-222222222222',
+      appointmentTypeId: '33333333-3333-3333-3333-333333333333',
       date: '2025-01-15',
       time: '10:00',
       modality: 'in-person',

@@ -1,8 +1,26 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import axios from 'axios';
-import { authApi } from '../api';
 
-vi.mock('axios');
+// Hoist mock functions to run before vi.mock
+const { mockGet, mockPost } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+}));
+
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({
+      get: mockGet,
+      post: mockPost,
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() },
+      },
+    })),
+  },
+}));
+
+// Import after mock is set up
+import { authApi } from '../api';
 
 describe('API Client', () => {
   beforeEach(() => {
@@ -13,29 +31,25 @@ describe('API Client', () => {
   describe('authApi', () => {
     describe('login', () => {
       it('should store token and user on successful login', async () => {
-        const mockResponse = {
-          data: {
-            token: 'test-token',
-            user: {
-              id: '1',
-              email: 'test@example.com',
-              role: 'admin',
-              fullName: 'Test User',
-            },
+        const mockResponseData = {
+          token: 'test-token',
+          user: {
+            id: '1',
+            email: 'test@example.com',
+            role: 'admin',
+            fullName: 'Test User',
           },
         };
 
-        vi.mocked(axios.create).mockReturnValue({
-          post: vi.fn().mockResolvedValue(mockResponse),
-        } as any);
+        mockPost.mockResolvedValue({ data: mockResponseData });
 
         const credentials = { email: 'test@example.com', password: 'password' };
         const result = await authApi.login(credentials);
 
-        expect(result).toEqual(mockResponse.data);
+        expect(result).toEqual(mockResponseData);
         expect(localStorage.getItem('authToken')).toBe('test-token');
         expect(localStorage.getItem('user')).toBe(
-          JSON.stringify(mockResponse.data.user)
+          JSON.stringify(mockResponseData.user)
         );
       });
     });

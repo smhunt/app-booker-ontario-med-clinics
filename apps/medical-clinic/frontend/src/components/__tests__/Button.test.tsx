@@ -18,7 +18,7 @@ describe('Button', () => {
 
   it('should be disabled when disabled prop is true', () => {
     render(<Button disabled>Click me</Button>);
-    expect(screen.getByText('Click me')).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 
   it('should show loading state', () => {

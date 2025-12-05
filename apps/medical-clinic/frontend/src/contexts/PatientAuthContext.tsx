@@ -1,4 +1,4 @@
-import { useUser, useClerk, useAuth } from '@clerk/clerk-react';
+import { useClerkContext } from './ClerkContext';
 
 export interface PatientInfo {
   id: string;
@@ -16,20 +16,32 @@ export interface PatientAuthState {
   signIn: () => void;
   signOut: () => Promise<void>;
   getToken: () => Promise<string | null>;
+  clerkAvailable: boolean;
 }
 
 /**
  * Hook for patient authentication via Clerk
  * Use this for patient-facing features (booking, viewing appointments)
  * Staff/admin auth uses the separate AuthContext with JWT
+ * Returns safe defaults when Clerk is not available
  */
 export function usePatientAuth(): PatientAuthState {
-  const { isSignedIn, isLoaded, user } = useUser();
-  const { openSignIn, signOut } = useClerk();
-  const { getToken } = useAuth();
+  const { isAvailable, isSignedIn, isLoaded, user, openSignIn, signOut, getToken } = useClerkContext();
+
+  if (!isAvailable) {
+    return {
+      isSignedIn: false,
+      isLoaded: true,
+      patient: null,
+      signIn: () => console.warn('Clerk not available'),
+      signOut: () => Promise.resolve(),
+      getToken: () => Promise.resolve(null),
+      clerkAvailable: false,
+    };
+  }
 
   return {
-    isSignedIn: isSignedIn ?? false,
+    isSignedIn,
     isLoaded,
     patient: user
       ? {
@@ -44,5 +56,6 @@ export function usePatientAuth(): PatientAuthState {
     signIn: () => openSignIn(),
     signOut: () => signOut(),
     getToken: () => getToken(),
+    clerkAvailable: true,
   };
 }

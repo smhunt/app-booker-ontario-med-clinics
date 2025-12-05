@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, SignIn, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignIn, UserButton } from '../contexts/ClerkContext';
 import { usePatientAuth } from '../contexts/PatientAuthContext';
 import { publicApi } from '../lib/api';
 import type { Booking } from '../types';
-import { format, isPast, parseISO } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { Link } from 'react-router-dom';
 
 // Helper to parse date string in local timezone

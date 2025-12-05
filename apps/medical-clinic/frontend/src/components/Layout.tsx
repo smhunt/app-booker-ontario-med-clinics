@@ -1,10 +1,8 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { usePatientAuth } from '../contexts/PatientAuthContext';
 
 export function Layout() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { isSignedIn: isPatientSignedIn } = usePatientAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">

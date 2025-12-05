@@ -47,7 +47,7 @@ export interface Booking {
   date: string;
   time: string;
   modality: 'in-person' | 'video' | 'phone';
-  status: 'pending' | 'approved' | 'declined' | 'cancelled';
+  status: 'pending' | 'approved' | 'confirmed' | 'declined' | 'cancelled' | 'completed';
   reason?: string;
   provider?: {
     name: string;

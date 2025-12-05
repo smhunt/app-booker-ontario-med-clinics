@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { SignIn, SignedIn, SignedOut, UserButton } from '../contexts/ClerkContext';
 import { usePatientAuth } from '../contexts/PatientAuthContext';
 import { publicApi } from '../lib/api';
 import type {
