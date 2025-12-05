@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { clerkClient, ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/express';
+import { clerkClient, clerkMiddleware, getAuth, requireAuth } from '@clerk/express';
 import logger from '../utils/logger';
 
 /**
@@ -27,26 +27,25 @@ declare global {
  * Clerk middleware that attaches auth state to request
  * Use this at app level to enable Clerk auth checking
  */
-export const clerkAuth = ClerkExpressWithAuth();
+export const clerkAuth = clerkMiddleware();
 
 /**
  * Require patient to be signed in via Clerk
  * Returns 401 if not authenticated
  */
-export const requirePatient = ClerkExpressRequireAuth();
+export const requirePatient = requireAuth();
 
 /**
  * Extract patient info from Clerk auth and attach to request
- * Must be used after ClerkExpressWithAuth or ClerkExpressRequireAuth
+ * Must be used after clerkMiddleware or requireAuth
  */
 export async function extractPatientInfo(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    // @ts-expect-error - Clerk types may not be fully compatible
-    const auth = req.auth;
+    const auth = getAuth(req);
 
     if (!auth?.userId) {
       next();
@@ -95,8 +94,7 @@ export function requirePatientWithInfo(
   next: NextFunction
 ): void {
   // First check if authenticated
-  // @ts-expect-error - Clerk types
-  const auth = req.auth;
+  const auth = getAuth(req);
 
   if (!auth?.userId) {
     res.status(401).json({

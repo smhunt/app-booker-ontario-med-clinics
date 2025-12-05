@@ -6,6 +6,9 @@ import {
   ClerkPatient,
 } from '../clerkAuth';
 
+// Store the mock auth for getAuth to return
+let mockAuthState: { userId?: string } | null = null;
+
 // Mock the @clerk/express module
 jest.mock('@clerk/express', () => ({
   clerkClient: {
@@ -13,12 +16,13 @@ jest.mock('@clerk/express', () => ({
       getUser: jest.fn(),
     },
   },
-  ClerkExpressWithAuth: jest.fn(() => (req: Request, res: Response, next: NextFunction) => next()),
-  ClerkExpressRequireAuth: jest.fn(() => (req: Request, res: Response, next: NextFunction) => next()),
+  clerkMiddleware: jest.fn(() => (_req: Request, _res: Response, next: NextFunction) => next()),
+  requireAuth: jest.fn(() => (_req: Request, _res: Response, next: NextFunction) => next()),
+  getAuth: jest.fn((_req: Request) => mockAuthState),
 }));
 
 // Import the mocked module
-import { clerkClient } from '@clerk/express';
+import { clerkClient, getAuth } from '@clerk/express';
 
 describe('Clerk Auth Middleware', () => {
   let mockRequest: Partial<Request>;
@@ -27,7 +31,6 @@ describe('Clerk Auth Middleware', () => {
 
   beforeEach(() => {
     mockRequest = {
-      auth: undefined,
       clerkPatient: undefined,
     } as Partial<Request>;
     mockResponse = {
@@ -35,7 +38,10 @@ describe('Clerk Auth Middleware', () => {
       json: jest.fn().mockReturnThis(),
     };
     mockNext = jest.fn();
+    mockAuthState = null; // Reset auth state
     jest.clearAllMocks();
+    // Reset the getAuth mock to use mockAuthState
+    (getAuth as jest.Mock).mockImplementation(() => mockAuthState);
   });
 
   describe('getPatientFromClerk', () => {
@@ -75,7 +81,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should return 401 when userId is missing', () => {
-      mockRequest.auth = {} as any;
+      mockAuthState = {};
 
       requirePatientWithInfo(
         mockRequest as Request,
@@ -88,7 +94,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should proceed when userId is present', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
 
       // Mock clerkClient.users.getUser
       (clerkClient.users.getUser as jest.Mock).mockResolvedValue({
@@ -125,7 +131,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should call next when auth has no userId', async () => {
-      mockRequest.auth = {} as any;
+      mockAuthState = {};
 
       await extractPatientInfo(
         mockRequest as Request,
@@ -138,7 +144,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should extract patient info from Clerk user', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
 
       (clerkClient.users.getUser as jest.Mock).mockResolvedValue({
         id: 'user_123',
@@ -165,7 +171,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should handle users without email', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
 
       (clerkClient.users.getUser as jest.Mock).mockResolvedValue({
         id: 'user_123',
@@ -192,7 +198,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should handle Clerk API errors gracefully', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
 
       (clerkClient.users.getUser as jest.Mock).mockRejectedValue(
         new Error('Clerk API error')
@@ -210,7 +216,7 @@ describe('Clerk Auth Middleware', () => {
 
   describe('edge cases', () => {
     it('should handle undefined emailAddresses array', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
 
       (clerkClient.users.getUser as jest.Mock).mockResolvedValue({
         id: 'user_123',
@@ -231,7 +237,7 @@ describe('Clerk Auth Middleware', () => {
     });
 
     it('should preserve existing request properties', async () => {
-      mockRequest.auth = { userId: 'user_123' } as any;
+      mockAuthState = { userId: 'user_123' };
       mockRequest.body = { test: 'data' };
 
       (clerkClient.users.getUser as jest.Mock).mockResolvedValue({
