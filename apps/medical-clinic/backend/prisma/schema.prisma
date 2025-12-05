@@ -61,6 +61,7 @@ model Patient {
   languages               Json      @default("[\"en\"]") // Array of language codes
   chronicConditions       Json      @default("[]")     // Array of conditions
   preferredProviderId     String?
+  clerkUserId             String?   @unique // Clerk user ID for patient auth
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
@@ -69,6 +70,7 @@ model Patient {
 
   @@index([preferredProviderId])
   @@index([fakeMrn])
+  @@index([clerkUserId])
 }
 
 model AppointmentType {

@@ -12,9 +12,13 @@ import providersRoutes from './routes/public/providers';
 import appointmentTypesRoutes from './routes/public/appointmentTypes';
 import availabilityRoutes from './routes/public/availability';
 import bookingsRoutes from './routes/public/bookings';
+import patientBookingsRoutes from './routes/patient/bookings';
 import adminBookingsRoutes from './routes/admin/bookings';
 import adminAuditLogsRoutes from './routes/admin/auditLogs';
 import adminReportsRoutes from './routes/admin/reports';
+
+// Clerk middleware
+import { clerkAuth } from './middleware/clerkAuth';
 
 const app = express();
 
@@ -34,6 +38,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // PHI Guard - enforce CANADA_PHIPA_READY flag
 app.use(phiGuard);
+
+// Clerk auth middleware (attaches auth state to request for patient routes)
+app.use(clerkAuth);
 
 // Request logging
 app.use((req, _res, next) => {
@@ -99,6 +106,9 @@ app.use('/providers', providersRoutes);
 app.use('/appointment-types', appointmentTypesRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/bookings', bookingsRoutes);
+
+// Patient routes (Clerk auth required)
+app.use('/patient', patientBookingsRoutes);
 
 // Admin routes
 app.use('/admin/bookings', adminBookingsRoutes);
