@@ -24,10 +24,10 @@ services:
       dockerfile: Dockerfile
     container_name: medical-backend
     ports:
-      - "8080:8080"
+      - "3080:3080"
     environment:
       - NODE_ENV=development
-      - PORT=8080
+      - PORT=3080
       - DATABASE_URL=postgresql://oab_user:oab_password@db:5432/oab_dev
       - CANADA_PHIPA_READY=false
       - JWT_SECRET=dev_secret_change_in_production_12345
@@ -54,7 +54,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=http://localhost:3080
       - VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ}
     volumes:
       - ./frontend:/app

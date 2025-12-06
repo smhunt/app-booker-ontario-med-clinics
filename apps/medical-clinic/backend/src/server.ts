@@ -11,7 +11,7 @@ import app from './app';
 import logger from './utils/logger';
 import { PrismaClient } from '@prisma/client';
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3080;
 const prisma = new PrismaClient();
 
 async function startServer() {

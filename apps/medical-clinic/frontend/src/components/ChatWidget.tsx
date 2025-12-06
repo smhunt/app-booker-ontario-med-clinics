@@ -8,7 +8,7 @@ interface Message {
   timestamp: Date;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3080';
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +66,7 @@ export function ChatWidget() {
       setMessages([{
         id: 'welcome',
         role: 'assistant',
-        content: "Hello! I'm your clinic assistant. I can help you:\n\n- Find information about our doctors\n- Check appointment availability\n- View your upcoming appointments\n\nHow can I help you today?",
+        content: "Hello! I'm your clinic assistant. How can I help you today?\n\n1. Find a doctor\n2. Check appointment availability\n3. View my appointments\n4. See appointment types\n\nReply with a number or describe what you need.",
         timestamp: new Date(),
       }]);
     }

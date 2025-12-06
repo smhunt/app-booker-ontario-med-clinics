@@ -26,10 +26,10 @@ services:
       dockerfile: Dockerfile
     container_name: medical-backend
     ports:
-      - "8080:8080"
+      - "3080:3080"
     environment:
       - NODE_ENV=development
-      - PORT=8080
+      - PORT=3080
       - DATABASE_URL=postgresql://oab_user:oab_password@medical-db:5432/oab_dev
       - CANADA_PHIPA_READY=false
       - JWT_SECRET=dev_secret_change_in_production_12345
@@ -57,7 +57,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=http://localhost:3080
       - VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ}
     volumes:
       - ./apps/medical-clinic/frontend:/app
@@ -89,10 +89,10 @@ services:
       dockerfile: Dockerfile
     container_name: vet-backend
     ports:
-      - "8081:8081"
+      - "3081:3081"
     environment:
       - NODE_ENV=development
-      - PORT=8081
+      - PORT=3081
       - DATABASE_URL=postgresql://vet_user:vet_password@vet-db:5432/vet_dev
       - CANADA_PHIPA_READY=false
       - JWT_SECRET=dev_secret_change_in_production_vet_12345
@@ -120,7 +120,7 @@ services:
     ports:
       - "3002:3000"
     environment:
-      - VITE_API_URL=http://localhost:8081
+      - VITE_API_URL=http://localhost:3081
       - VITE_CLERK_PUBLISHABLE_KEY=${VET_CLERK_PUBLISHABLE_KEY:-}
     volumes:
       - ./apps/vet-clinic/frontend:/app

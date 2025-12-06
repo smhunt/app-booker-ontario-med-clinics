@@ -24,7 +24,7 @@ const getApiBaseUrl = () => {
   }
   // Otherwise, derive from current window location (supports LAN access)
   const { protocol, hostname } = window.location;
-  return `${protocol}//${hostname}:8080`;
+  return `${protocol}//${hostname}:3080`;
 };
 
 const API_BASE_URL = getApiBaseUrl();

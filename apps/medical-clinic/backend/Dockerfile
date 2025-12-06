@@ -19,7 +19,7 @@ COPY . .
 RUN npx prisma generate
 
 # Expose port
-EXPOSE 8080
+EXPOSE 3080
 
 # Start command
 CMD ["npm", "run", "dev"]

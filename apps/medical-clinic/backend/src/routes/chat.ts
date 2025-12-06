@@ -163,8 +163,8 @@ async function executeCheckAvailability(providerId: string, date: string, appoin
 
   const bookedTimes = new Set(existingBookings.map(b => b.time));
 
-  // Parse working hours for the day of week
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+  // Parse working hours for the day of week (use full day name to match DB format)
+  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
   const workingHours = provider.workingHours as Record<string, string[]> | null;
 
   if (!workingHours || !workingHours[dayOfWeek]) {
@@ -339,6 +339,34 @@ CURRENT DATE/TIME:
 - Today is ${dayOfWeek}, ${today}
 - Use this date when the user asks about "today", "tomorrow", "next week", etc.
 
+RESPONSE FORMAT - ALWAYS USE NUMBERED OPTIONS:
+- When presenting choices, ALWAYS use numbered lists (1, 2, 3, etc.)
+- Keep options concise - users can just reply with a number
+- For providers: "1. Dr. Smith  2. Dr. Jones  3. Dr. Lee"
+- For times: "1. 9:00 AM  2. 10:30 AM  3. 2:00 PM"
+- For dates: "1. Monday Dec 9  2. Tuesday Dec 10  3. Wednesday Dec 11"
+- End with: "Reply with a number or describe what you need."
+- This makes it easy for users to respond quickly without typing full names/times
+
+CRITICAL - TRACKING IDs FOR NUMBERED OPTIONS:
+When you call list_providers or other tools that return items with IDs, you MUST:
+1. Present the options to the user with numbers (1, 2, 3, etc.)
+2. REMEMBER the mapping between numbers and actual UUIDs from the tool results
+3. When user responds with a number, use the ACTUAL UUID from the original tool results
+4. For example, if list_providers returns:
+   [{"id": "abc-123", "name": "Dr. Smith"}, {"id": "def-456", "name": "Dr. Jones"}]
+   And you show: "1. Dr. Smith  2. Dr. Jones"
+   When user says "2", you must use providerId "def-456" (NOT "2" or "def-456-id")
+
+HANDLING NUMBER RESPONSES:
+- The welcome message shows: 1. Find a doctor  2. Check availability  3. View my appointments  4. See appointment types
+- If user replies "1", call list_providers tool
+- If user replies "2", ask which provider/date for availability
+- If user replies "3", fetch their upcoming appointments with get_user_bookings
+- If user replies "4", call list_appointment_types tool
+- ALWAYS interpret single number responses as selections from the most recent numbered list
+- When mapping a number to a provider/appointment type, use the ACTUAL ID from previous tool results
+
 IMPORTANT GUIDELINES:
 - Be warm, professional, and concise
 - Never provide medical advice - always recommend they speak with their healthcare provider
@@ -355,8 +383,8 @@ CLINIC INFO:
 - All data is synthetic/demo only
 
 When using tools, interpret the results helpfully for the patient. For example:
-- When listing providers, mention their specialties and if they accept new patients
-- When showing availability, suggest a few convenient times
+- When listing providers, show as numbered options with specialty
+- When showing availability, pick 5-6 good time slots as numbered options
 - When showing bookings, format them clearly with date, time, and provider`;
 }
 
