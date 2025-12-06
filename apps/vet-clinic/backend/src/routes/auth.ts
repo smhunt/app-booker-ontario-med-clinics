@@ -16,8 +16,50 @@ const loginSchema = z.object({
 });
 
 /**
- * POST /auth/login
- * Authenticate admin user and return JWT token
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Authenticate staff user
+ *     description: Login with email and password to receive a JWT token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: admin@vetclinic-demo.ca
+ *               password:
+ *                 type: string
+ *                 example: Admin123!
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     email: { type: string }
+ *                     name: { type: string }
+ *                     role: { type: string }
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         description: Too many attempts
  */
 router.post('/login', authRateLimit, async (req, res): Promise<void> => {
   try {

@@ -5,8 +5,25 @@ const router = Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /appointment-types
- * List all active appointment types
+ * @swagger
+ * /appointment-types:
+ *   get:
+ *     summary: List all appointment types
+ *     tags: [Appointment Types]
+ *     responses:
+ *       200:
+ *         description: List of appointment types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 appointmentTypes:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AppointmentType'
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (_req, res): Promise<void> => {
   try {
@@ -38,8 +55,32 @@ router.get('/', async (_req, res): Promise<void> => {
 });
 
 /**
- * GET /appointment-types/:id
- * Get a specific appointment type
+ * @swagger
+ * /appointment-types/{id}:
+ *   get:
+ *     summary: Get appointment type by ID
+ *     tags: [Appointment Types]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Appointment type details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 appointmentType:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:id', async (req, res): Promise<void> => {
   try {

@@ -5,8 +5,26 @@ const router = Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /veterinarians
- * List all active veterinarians
+ * @swagger
+ * /veterinarians:
+ *   get:
+ *     summary: List all veterinarians
+ *     description: Returns a list of all active veterinarians
+ *     tags: [Veterinarians]
+ *     responses:
+ *       200:
+ *         description: List of veterinarians
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 veterinarians:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Veterinarian'
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (_req, res): Promise<void> => {
   try {
@@ -39,8 +57,32 @@ router.get('/', async (_req, res): Promise<void> => {
 });
 
 /**
- * GET /veterinarians/:id
- * Get a specific veterinarian
+ * @swagger
+ * /veterinarians/{id}:
+ *   get:
+ *     summary: Get veterinarian by ID
+ *     tags: [Veterinarians]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Veterinarian details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 veterinarian:
+ *                   $ref: '#/components/schemas/Veterinarian'
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:id', async (req, res): Promise<void> => {
   try {

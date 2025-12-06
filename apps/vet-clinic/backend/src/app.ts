@@ -97,6 +97,87 @@ const swaggerOptions = {
           bearerFormat: 'JWT',
         },
       },
+      schemas: {
+        Error: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            message: { type: 'string' },
+          },
+        },
+        ValidationError: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            details: { type: 'array', items: { type: 'object' } },
+          },
+        },
+        Veterinarian: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            displayName: { type: 'string' },
+            specialty: { type: 'string' },
+            team: { type: 'string' },
+            acceptsNewClients: { type: 'boolean' },
+            languages: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        AppointmentType: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            duration: { type: 'integer' },
+            description: { type: 'string' },
+            isCommon: { type: 'boolean' },
+          },
+        },
+        Pet: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            species: { type: 'string', enum: ['dog', 'cat', 'bird', 'rabbit', 'reptile', 'other'] },
+            breed: { type: 'string' },
+            sex: { type: 'string' },
+            weight: { type: 'number' },
+            dateOfBirth: { type: 'string', format: 'date' },
+          },
+        },
+        Booking: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            date: { type: 'string', format: 'date' },
+            time: { type: 'string' },
+            modality: { type: 'string', enum: ['in-person', 'video', 'phone'] },
+            status: { type: 'string', enum: ['pending', 'confirmed', 'cancelled', 'completed'] },
+            reason: { type: 'string' },
+            veterinarian: { type: 'object' },
+            pet: { type: 'object' },
+            appointmentType: { type: 'object' },
+          },
+        },
+        TimeSlot: {
+          type: 'object',
+          properties: {
+            time: { type: 'string' },
+            available: { type: 'boolean' },
+          },
+        },
+        AuditLog: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string' },
+            action: { type: 'string' },
+            resource: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
     },
   },
   apis: ['./src/routes/**/*.ts'],
