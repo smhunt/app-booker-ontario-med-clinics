@@ -1,5 +1,11 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+
+// Load .env from backend directory first, then from monorepo root
+dotenv.config(); // backend/.env
+// Walk up from backend to find root .env
+const rootEnvPath = path.resolve(process.cwd(), '../../../.env');
+dotenv.config({ path: rootEnvPath });
 
 import app from './app';
 import logger from './utils/logger';

@@ -18,6 +18,7 @@ import accountBookingsRoutes from './routes/account/bookings';
 import adminBookingsRoutes from './routes/admin/bookings';
 import adminAuditLogsRoutes from './routes/admin/auditLogs';
 import adminReportsRoutes from './routes/admin/reports';
+import chatRoutes from './routes/chat';
 
 // Clerk middleware
 import { clerkAuth } from './middleware/clerkAuth';
@@ -323,6 +324,9 @@ app.use('/account/bookings', accountBookingsRoutes);
 app.use('/admin/bookings', adminBookingsRoutes);
 app.use('/admin/audit-logs', adminAuditLogsRoutes);
 app.use('/admin/reports', adminReportsRoutes);
+
+// Chat route (AI assistant)
+app.use('/chat', chatRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,5 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ChatWidget } from './ChatWidget';
 
 export function Layout() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -107,6 +108,9 @@ export function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }

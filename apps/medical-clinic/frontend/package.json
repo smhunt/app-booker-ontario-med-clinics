@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.57.1",
+    "ai": "^5.0.108",
     "axios": "^1.6.2",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.0",
