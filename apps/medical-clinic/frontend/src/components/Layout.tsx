@@ -83,12 +83,28 @@ export function Layout() {
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-gray-600">
-            Ontario Health Online Appointment Booking System - DEMO (Synthetic Data Only)
-          </p>
-          <p className="text-center text-xs text-gray-500 mt-2">
-            Compliant with Ontario Health OAB v2.0 Standard
-          </p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-gray-600">
+                Ontario Health Online Appointment Booking System - DEMO
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Compliant with Ontario Health OAB v2.0 Standard
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-sm">
+              <Link
+                to="/about"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                About &amp; Roadmap
+              </Link>
+              <span className="text-gray-400">|</span>
+              <span className="text-gray-500">
+                Built by <span className="font-medium text-gray-700">Ecoworks</span>
+              </span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

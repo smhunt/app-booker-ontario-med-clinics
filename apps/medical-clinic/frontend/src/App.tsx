@@ -6,6 +6,7 @@ import { Home } from './pages/Home';
 import { BookAppointment } from './pages/BookAppointment';
 import { PatientDashboard } from './pages/PatientDashboard';
 import { Login } from './pages/Login';
+import { About } from './pages/About';
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { AdminBookings } from './pages/admin/Bookings';
 import { AdminAuditLogs } from './pages/admin/AuditLogs';
@@ -20,6 +21,7 @@ function App() {
             <Route path="book" element={<BookAppointment />} />
             <Route path="my-appointments" element={<PatientDashboard />} />
             <Route path="login" element={<Login />} />
+            <Route path="about" element={<About />} />
 
             {/* Admin routes */}
             <Route

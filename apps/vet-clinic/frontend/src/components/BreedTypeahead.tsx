@@ -104,7 +104,7 @@ export function BreedTypeahead({
     }
   };
 
-  const handleBlur = (e: React.FocusEvent) => {
+  const handleBlur = (_e: React.FocusEvent) => {
     // Delay closing to allow click on option
     setTimeout(() => {
       if (!listRef.current?.contains(document.activeElement)) {

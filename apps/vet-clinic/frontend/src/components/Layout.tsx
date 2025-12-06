@@ -130,13 +130,27 @@ export function Layout() {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-gray-500">
-              Pawsitive Care Veterinary Clinic - Demo
-            </p>
-            <p className="text-xs text-gray-400 mt-2 md:mt-0">
-              All data is fictional. PIPEDA compliant.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-gray-500">
+                Pawsitive Care Veterinary Clinic - Demo
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                All data is fictional. PIPEDA compliant.
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-sm">
+              <Link
+                to="/about"
+                className="text-gray-500 hover:text-primary-600 transition-colors"
+              >
+                About &amp; Roadmap
+              </Link>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-400">
+                Built by <span className="font-medium text-gray-600">Ecoworks</span>
+              </span>
+            </div>
           </div>
         </div>
       </footer>
