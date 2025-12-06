@@ -129,15 +129,15 @@ export function BookAppointment() {
   const selectedTypeData = appointmentTypes.find((t) => t.id === selectedType);
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Book an Appointment</h1>
+    <div className="max-w-3xl mx-auto px-4 sm:px-0">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-8">Book an Appointment</h1>
 
-      {/* Progress indicator */}
-      <div className="flex items-center justify-between mb-8">
+      {/* Progress indicator - sticky on mobile */}
+      <div className="flex items-center justify-between mb-4 sm:mb-8 bg-white py-2 -mx-4 px-4 sm:mx-0 sm:px-0 sticky top-14 sm:static z-10">
         {(['pet', 'vet', 'datetime', 'confirm'] as Step[]).map((s, i) => (
           <div key={s} className="flex items-center">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 ${
                 step === s
                   ? 'bg-primary-600 text-white'
                   : i < ['pet', 'vet', 'datetime', 'confirm'].indexOf(step)
@@ -149,7 +149,7 @@ export function BookAppointment() {
             </div>
             {i < 3 && (
               <div
-                className={`w-16 h-1 mx-2 ${
+                className={`w-8 sm:w-16 h-1 mx-1 sm:mx-2 ${
                   i < ['pet', 'vet', 'datetime', 'confirm'].indexOf(step)
                     ? 'bg-primary-200'
                     : 'bg-gray-200'
@@ -197,7 +197,7 @@ export function BookAppointment() {
               </SignedIn>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Your Name *
@@ -261,7 +261,7 @@ export function BookAppointment() {
             </div>
 
             <h3 className="text-lg font-medium mt-6 mb-4">Pet Information</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Pet Name *
@@ -420,7 +420,7 @@ export function BookAppointment() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold mb-4">Select Date & Time</h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date
@@ -438,7 +438,7 @@ export function BookAppointment() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Appointment Type
+                  Visit Type
                 </label>
                 <select
                   value={modality}
@@ -461,7 +461,7 @@ export function BookAppointment() {
                   No available slots for this date. Please select another date.
                 </p>
               ) : (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {availableSlots.map((slot) => (
                     <button
                       key={slot.time}
