@@ -83,13 +83,28 @@ Implemented the caregiver/dependent booking pattern allowing users to book appoi
 - Query param validation for listing endpoints
 - Health card numbers stored but not exposed in responses
 
+**About Page & Roadmap** (`apps/*/frontend/src/pages/About.tsx`):
+- Project overview with Ontario Health OAB v2.0 compliance
+- Key features grid (self-service, security, accessibility, admin)
+- Ecoworks developer profile with expertise tags
+- Platform variants section:
+  - Live: Medical Clinic (localhost:3001), Vet Clinic (localhost:3002)
+  - Coming Soon: Conversational Chat Interface (priority feature)
+  - Planned: Dental, Optometry, Mental Health
+  - Future: Physiotherapy, Walk-in Clinic, Fitness & Wellness
+- Technology stack overview
+- Footer links on all pages to About & Roadmap
+
 ### Commits
 - `e0089fc` feat(medical): add Account → FamilyMember model for booking dependents
 - `5c5079a` feat(frontend): add family member selector UI components
 - `d9c36ba` security(api): add input validation to account routes
+- `3c2a065` docs: update BUILD_LOG with security review details
+- `c66af6e` feat: add About page with Ecoworks profile and roadmap
 
-### Plan Document
-Saved to: `~/.claude/plans/sequential-seeking-adleman.md`
+### Plan Documents
+- FamilyMember model: `~/.claude/plans/sequential-seeking-adleman.md`
+- Chat Interface (in progress): `~/.claude/plans/chat-interface-plan.md`
 
 ---
 
