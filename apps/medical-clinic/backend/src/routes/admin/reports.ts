@@ -5,8 +5,56 @@ const router = Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /admin/reports/bookings
- * Get booking statistics
+ * @swagger
+ * /admin/reports/bookings:
+ *   get:
+ *     summary: Get booking statistics (Admin)
+ *     description: Returns booking statistics grouped by status, provider, and modality
+ *     tags: [Admin - Reports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter bookings from this date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter bookings until this date
+ *     responses:
+ *       200:
+ *         description: Booking statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     byStatus:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                     byProvider:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                     byModality:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.get('/bookings', async (req, res) => {
   try {

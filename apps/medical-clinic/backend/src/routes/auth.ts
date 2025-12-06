@@ -16,8 +16,68 @@ const loginSchema = z.object({
 });
 
 /**
- * POST /auth/login
- * Authenticate user and return JWT token
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Authenticate staff user
+ *     description: Login with email and password to receive a JWT token for accessing protected endpoints
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: admin@ildertonhealth-demo.ca
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: Admin123!
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     email:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, staff]
+ *       400:
+ *         description: Invalid input (validation error)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationError'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Too many login attempts
  */
 router.post('/login', authRateLimit, async (req, res): Promise<void> => {
   try {

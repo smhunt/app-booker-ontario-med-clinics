@@ -26,8 +26,84 @@ const createBookingSchema = z.object({
 });
 
 /**
- * POST /bookings
- * Create a new booking
+ * @swagger
+ * /bookings:
+ *   post:
+ *     summary: Create a new booking
+ *     description: Book an appointment with a provider. Can use existing patient ID or create new patient with patientInfo.
+ *     tags: [Bookings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - providerId
+ *               - appointmentTypeId
+ *               - date
+ *               - time
+ *               - modality
+ *             properties:
+ *               providerId:
+ *                 type: string
+ *                 format: uuid
+ *               patientId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Existing patient ID (optional if patientInfo provided)
+ *               patientInfo:
+ *                 type: object
+ *                 description: New patient information (required if patientId not provided)
+ *                 properties:
+ *                   firstName:
+ *                     type: string
+ *                   lastName:
+ *                     type: string
+ *                   dateOfBirth:
+ *                     type: string
+ *                     format: date
+ *                   email:
+ *                     type: string
+ *                     format: email
+ *                   smsNumber:
+ *                     type: string
+ *                   preferredNotification:
+ *                     type: string
+ *                     enum: [email, sms, voice]
+ *               appointmentTypeId:
+ *                 type: string
+ *                 format: uuid
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               time:
+ *                 type: string
+ *                 pattern: '^\d{2}:\d{2}$'
+ *                 example: "09:30"
+ *               modality:
+ *                 type: string
+ *                 enum: [in-person, video, phone]
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Booking created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 booking:
+ *                   $ref: '#/components/schemas/Booking'
+ *       400:
+ *         description: Invalid booking data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationError'
+ *       500:
+ *         description: Server error
  */
 router.post('/', publicRateLimit, async (req, res): Promise<void> => {
   try {
@@ -123,8 +199,41 @@ router.post('/', publicRateLimit, async (req, res): Promise<void> => {
 });
 
 /**
- * GET /bookings/patient/:email
- * Get upcoming bookings for a patient by email
+ * @swagger
+ * /bookings/patient/{email}:
+ *   get:
+ *     summary: Get patient bookings by email
+ *     description: Returns upcoming bookings for a patient identified by email
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: email
+ *         description: Patient email (URL encoded)
+ *     responses:
+ *       200:
+ *         description: Patient bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 patient:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                 bookings:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Booking'
+ *       500:
+ *         description: Server error
  */
 router.get('/patient/:email', async (req, res): Promise<void> => {
   try {
@@ -186,8 +295,34 @@ router.get('/patient/:email', async (req, res): Promise<void> => {
 });
 
 /**
- * GET /bookings/:id
- * Get booking details
+ * @swagger
+ * /bookings/{id}:
+ *   get:
+ *     summary: Get booking by ID
+ *     description: Returns details for a specific booking
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Booking ID
+ *     responses:
+ *       200:
+ *         description: Booking details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 booking:
+ *                   $ref: '#/components/schemas/Booking'
+ *       404:
+ *         description: Booking not found
+ *       500:
+ *         description: Server error
  */
 router.get('/:id', async (req, res): Promise<void> => {
   try {
@@ -233,8 +368,50 @@ router.get('/:id', async (req, res): Promise<void> => {
 });
 
 /**
- * DELETE /bookings/:id
- * Cancel a booking
+ * @swagger
+ * /bookings/{id}:
+ *   delete:
+ *     summary: Cancel a booking
+ *     description: Cancels an existing booking
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Booking ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Cancellation reason
+ *     responses:
+ *       200:
+ *         description: Booking cancelled
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 booking:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     cancellationReason:
+ *                       type: string
+ *       500:
+ *         description: Server error
  */
 router.delete('/:id', async (req, res) => {
   try {

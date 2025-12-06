@@ -5,8 +5,30 @@ const router = Router();
 const prisma = new PrismaClient();
 
 /**
- * GET /providers
- * List all active providers
+ * @swagger
+ * /providers:
+ *   get:
+ *     summary: List all providers
+ *     description: Returns a list of all healthcare providers with their details
+ *     tags: [Providers]
+ *     responses:
+ *       200:
+ *         description: List of providers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 providers:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Provider'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/', async (_req, res): Promise<void> => {
   try {
@@ -46,8 +68,38 @@ router.get('/', async (_req, res): Promise<void> => {
 });
 
 /**
- * GET /providers/:id
- * Get a specific provider
+ * @swagger
+ * /providers/{id}:
+ *   get:
+ *     summary: Get provider by ID
+ *     description: Returns details for a specific healthcare provider
+ *     tags: [Providers]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Provider ID
+ *     responses:
+ *       200:
+ *         description: Provider details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 provider:
+ *                   $ref: '#/components/schemas/Provider'
+ *       404:
+ *         description: Provider not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
  */
 router.get('/:id', async (req, res): Promise<void> => {
   try {

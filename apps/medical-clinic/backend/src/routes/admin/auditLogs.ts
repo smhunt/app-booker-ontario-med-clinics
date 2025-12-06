@@ -21,8 +21,82 @@ const querySchema = z.object({
 });
 
 /**
- * GET /admin/audit-logs
- * Query audit logs
+ * @swagger
+ * /admin/audit-logs:
+ *   get:
+ *     summary: Query audit logs (Admin)
+ *     description: Returns audit logs with optional filters. Requires admin role.
+ *     tags: [Admin - Audit]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by user ID
+ *       - in: query
+ *         name: resource
+ *         schema:
+ *           type: string
+ *         description: Filter by resource type (e.g., booking, user)
+ *       - in: query
+ *         name: resourceId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by resource ID
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter logs from this date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter logs until this date
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Maximum number of logs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of logs to skip
+ *     responses:
+ *       200:
+ *         description: Audit logs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 offset:
+ *                   type: integer
+ *                 logs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AuditLog'
+ *       400:
+ *         description: Invalid query parameters
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - requires admin role
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (req, res): Promise<void> => {
   try {

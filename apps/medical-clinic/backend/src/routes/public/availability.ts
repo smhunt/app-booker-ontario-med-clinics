@@ -10,9 +10,54 @@ const availabilitySchema = z.object({
 });
 
 /**
- * GET /availability
- * Get available appointment slots for a provider on a specific date
- * Query params: providerId, date (YYYY-MM-DD)
+ * @swagger
+ * /availability:
+ *   get:
+ *     summary: Get available appointment slots
+ *     description: Returns available time slots for a specific provider on a given date
+ *     tags: [Availability]
+ *     parameters:
+ *       - in: query
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Provider ID
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2024-12-15"
+ *         description: Date in YYYY-MM-DD format
+ *     responses:
+ *       200:
+ *         description: Available slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 providerId:
+ *                   type: string
+ *                   format: uuid
+ *                 date:
+ *                   type: string
+ *                   format: date
+ *                 slots:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TimeSlot'
+ *       400:
+ *         description: Invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationError'
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (req, res): Promise<void> => {
   try {

@@ -13,8 +13,63 @@ router.use(authenticate);
 router.use(requireStaff);
 
 /**
- * GET /admin/bookings
- * List all bookings with filters
+ * @swagger
+ * /admin/bookings:
+ *   get:
+ *     summary: List all bookings (Admin)
+ *     description: Returns all bookings with optional filters. Requires staff authentication.
+ *     tags: [Admin - Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, confirmed, cancelled, completed]
+ *         description: Filter by booking status
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by provider
+ *       - in: query
+ *         name: patientId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by patient
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter bookings from this date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter bookings until this date
+ *     responses:
+ *       200:
+ *         description: List of bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookings:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AdminBooking'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - requires staff role
+ *       500:
+ *         description: Server error
  */
 router.get('/', async (req, res) => {
   try {
@@ -77,8 +132,45 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * PATCH /admin/bookings/:id/approve
- * Approve a pending booking
+ * @swagger
+ * /admin/bookings/{id}/approve:
+ *   patch:
+ *     summary: Approve a booking (Admin)
+ *     description: Approves a pending booking and changes status to confirmed
+ *     tags: [Admin - Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Booking ID
+ *     responses:
+ *       200:
+ *         description: Booking approved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 booking:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
  */
 router.patch('/:id/approve', async (req, res) => {
   try {
@@ -116,8 +208,56 @@ router.patch('/:id/approve', async (req, res) => {
 });
 
 /**
- * PATCH /admin/bookings/:id/decline
- * Decline a pending booking
+ * @swagger
+ * /admin/bookings/{id}/decline:
+ *   patch:
+ *     summary: Decline a booking (Admin)
+ *     description: Declines a pending booking with optional reason
+ *     tags: [Admin - Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Booking ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Reason for declining
+ *     responses:
+ *       200:
+ *         description: Booking declined
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 booking:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     cancellationReason:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
  */
 router.patch('/:id/decline', async (req, res) => {
   try {

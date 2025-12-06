@@ -96,6 +96,134 @@ const swaggerOptions = {
           bearerFormat: 'JWT',
         },
       },
+      schemas: {
+        Error: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            message: { type: 'string' },
+          },
+        },
+        ValidationError: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            details: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'array', items: { type: 'string' } },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        Provider: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            fullName: { type: 'string' },
+            credentials: { type: 'string' },
+            specialty: { type: 'string' },
+            team: { type: 'string' },
+            rosterStatus: { type: 'string', enum: ['open', 'closed'] },
+            acceptsNewPatients: { type: 'boolean' },
+            bio: { type: 'string' },
+            photoUrl: { type: 'string' },
+            workingHours: { type: 'object' },
+          },
+        },
+        AppointmentType: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            duration: { type: 'integer', description: 'Duration in minutes' },
+            description: { type: 'string' },
+            isCommon: { type: 'boolean' },
+          },
+        },
+        TimeSlot: {
+          type: 'object',
+          properties: {
+            time: { type: 'string', example: '09:00' },
+            available: { type: 'boolean' },
+          },
+        },
+        Booking: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            date: { type: 'string', format: 'date' },
+            time: { type: 'string' },
+            modality: { type: 'string', enum: ['in-person', 'video', 'phone'] },
+            status: { type: 'string', enum: ['pending', 'confirmed', 'cancelled', 'completed'] },
+            reason: { type: 'string' },
+            provider: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+              },
+            },
+            appointmentType: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                duration: { type: 'integer' },
+              },
+            },
+          },
+        },
+        AdminBooking: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            date: { type: 'string', format: 'date' },
+            time: { type: 'string' },
+            modality: { type: 'string' },
+            status: { type: 'string' },
+            reason: { type: 'string' },
+            provider: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+              },
+            },
+            patient: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                fakeMrn: { type: 'string' },
+              },
+            },
+            appointmentType: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                duration: { type: 'integer' },
+              },
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        AuditLog: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            userId: { type: 'string' },
+            userRole: { type: 'string' },
+            action: { type: 'string' },
+            resource: { type: 'string' },
+            resourceId: { type: 'string' },
+            ipAddress: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
     },
   },
   apis: ['./src/routes/**/*.ts'],
