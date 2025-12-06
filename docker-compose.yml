@@ -1,62 +1,132 @@
 version: '3.8'
 
 services:
-  db:
+  # Medical Clinic Database
+  medical-db:
     image: postgres:15-alpine
-    container_name: oab-db
+    container_name: medical-db
     environment:
       POSTGRES_USER: oab_user
       POSTGRES_PASSWORD: oab_password
       POSTGRES_DB: oab_dev
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - medical_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U oab_user -d oab_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  backend:
+  # Medical Clinic Backend
+  medical-backend:
     build:
-      context: ./backend
+      context: ./apps/medical-clinic/backend
       dockerfile: Dockerfile
-    container_name: oab-backend
+    container_name: medical-backend
     ports:
-      - "8080:8080"
+      - "3080:3080"
     environment:
       - NODE_ENV=development
-      - PORT=8080
-      - DATABASE_URL=postgresql://oab_user:oab_password@db:5432/oab_dev
+      - PORT=3080
+      - DATABASE_URL=postgresql://oab_user:oab_password@medical-db:5432/oab_dev
       - CANADA_PHIPA_READY=false
       - JWT_SECRET=dev_secret_change_in_production_12345
       - POS_ADAPTER=mock
       - NOTIFICATION_ADAPTER=mock
       - LOG_LEVEL=info
       - LOG_REDACTION_ENABLED=true
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3001
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-sk_test_sY4JRyTVCgLbocgpvFiW9jkthJYOrtLYIxowlUEreT}
+      - CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ}
     depends_on:
-      db:
+      medical-db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./apps/medical-clinic/backend:/app
       - /app/node_modules
     command: npm run dev
 
-  frontend:
+  # Medical Clinic Frontend
+  medical-frontend:
     build:
-      context: ./frontend
+      context: ./apps/medical-clinic/frontend
       dockerfile: Dockerfile
-    container_name: oab-frontend
+    container_name: medical-frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=http://localhost:3080
+      - VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_YXNzdXJlZC1maXJlZmx5LTU3LmNsZXJrLmFjY291bnRzLmRldiQ}
     volumes:
-      - ./frontend:/app
+      - ./apps/medical-clinic/frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+  # Veterinary Clinic Database
+  vet-db:
+    image: postgres:15-alpine
+    container_name: vet-db
+    environment:
+      POSTGRES_USER: vet_user
+      POSTGRES_PASSWORD: vet_password
+      POSTGRES_DB: vet_dev
+    ports:
+      - "5434:5432"
+    volumes:
+      - vet_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vet_user -d vet_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Veterinary Clinic Backend
+  vet-backend:
+    build:
+      context: ./apps/vet-clinic/backend
+      dockerfile: Dockerfile
+    container_name: vet-backend
+    ports:
+      - "3081:3081"
+    environment:
+      - NODE_ENV=development
+      - PORT=3081
+      - DATABASE_URL=postgresql://vet_user:vet_password@vet-db:5432/vet_dev
+      - CANADA_PHIPA_READY=false
+      - JWT_SECRET=dev_secret_change_in_production_vet_12345
+      - POS_ADAPTER=mock
+      - NOTIFICATION_ADAPTER=mock
+      - LOG_LEVEL=info
+      - LOG_REDACTION_ENABLED=true
+      - CORS_ORIGIN=http://localhost:3002
+      - CLERK_SECRET_KEY=${VET_CLERK_SECRET_KEY:-}
+      - CLERK_PUBLISHABLE_KEY=${VET_CLERK_PUBLISHABLE_KEY:-}
+    depends_on:
+      vet-db:
+        condition: service_healthy
+    volumes:
+      - ./apps/vet-clinic/backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Veterinary Clinic Frontend
+  vet-frontend:
+    build:
+      context: ./apps/vet-clinic/frontend
+      dockerfile: Dockerfile
+    container_name: vet-frontend
+    ports:
+      - "3002:3000"
+    environment:
+      - VITE_API_URL=http://localhost:3081
+      - VITE_CLERK_PUBLISHABLE_KEY=${VET_CLERK_PUBLISHABLE_KEY:-}
+    volumes:
+      - ./apps/vet-clinic/frontend:/app
       - /app/node_modules
     command: npm run dev -- --host
 
 volumes:
-  postgres_data:
+  medical_postgres_data:
+  vet_postgres_data:

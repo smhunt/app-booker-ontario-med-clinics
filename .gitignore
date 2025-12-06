@@ -51,3 +51,4 @@ docker-compose.override.yml
 
 # Prisma
 prisma/migrations/*_dev/
+apps/vet-clinic/backend/src/generated/
