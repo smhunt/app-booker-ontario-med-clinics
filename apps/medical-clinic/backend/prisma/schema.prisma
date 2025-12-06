@@ -45,6 +45,10 @@ model Provider {
   @@index([clinicId])
 }
 
+// =============================================================================
+// LEGACY Patient model - will be migrated to PatientAccount + FamilyMember
+// Keep this for backward compatibility during migration
+// =============================================================================
 model Patient {
   id                      String    @id @default(uuid())
   name                    String
@@ -71,6 +75,88 @@ model Patient {
   @@index([preferredProviderId])
   @@index([fakeMrn])
   @@index([clerkUserId])
+}
+
+// =============================================================================
+// NEW: Account → CareRecipient model (PatientAccount → FamilyMember)
+// This unified model supports booking for self, children, elderly relatives, etc.
+// =============================================================================
+
+/// PatientAccount represents the authenticated user who logs in and manages
+/// family members and their appointments. This is analogous to PetOwner in the
+/// vet clinic application.
+model PatientAccount {
+  id                    String    @id @default(uuid())
+  clerkUserId           String?   @unique // Clerk authentication ID
+  email                 String    @unique
+  name                  String
+  phone                 String?
+  notificationChannel   String    @default("email") // email, sms, voice
+  consentNotifications  Boolean   @default(true)
+  canReceiveSms         Boolean   @default(true)
+  languages             Json      @default("[\"en\"]") // Array of language codes
+  preferredProviderId   String?   // Default provider for new bookings
+  isActive              Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  familyMembers         FamilyMember[]
+
+  @@index([clerkUserId])
+  @@index([email])
+}
+
+/// FamilyMember represents a care recipient - the person receiving medical care.
+/// This can be the account holder themselves (relationship='self'), their child,
+/// spouse, parent, or other dependent. Analogous to Pet in the vet clinic.
+model FamilyMember {
+  id                    String    @id @default(uuid())
+  accountId             String
+  name                  String
+  dateOfBirth           DateTime
+  relationship          String    @default("self") // self, child, spouse, parent, sibling, grandparent, guardian, other
+  gender                String    // male, female, nonbinary, prefer_not_to_say
+  healthCardNumber      String?   // OHIP number in Ontario (encrypted/masked in logs)
+  postalCode            String?
+  chronicConditions     Json      @default("[]")   // Array of condition strings
+  allergies             Json      @default("[]")   // Array of allergy strings
+  /// Whether this person can legally consent for their own medical care.
+  /// Set to false for minors and adults with guardians.
+  canSelfConsent        Boolean   @default(true)
+  isActive              Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  account               PatientAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  familyMemberBookings  FamilyMemberBooking[]
+
+  @@index([accountId])
+  @@index([relationship])
+}
+
+/// FamilyMemberBooking links a booking to a specific family member.
+/// This is the new booking model that supports the Account → CareRecipient pattern.
+/// Existing Booking model remains for backward compatibility.
+model FamilyMemberBooking {
+  id                  String          @id @default(uuid())
+  familyMemberId      String
+  providerId          String
+  appointmentTypeId   String
+  date                DateTime
+  time                String          // HH:MM format
+  modality            String          // in-person, video, phone
+  status              String          @default("pending") // pending, confirmed, cancelled, completed
+  reason              String?
+  notes               String?
+  cancellationReason  String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  familyMember        FamilyMember    @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+
+  @@index([familyMemberId])
+  @@index([providerId, date])
+  @@index([status])
 }
 
 model AppointmentType {

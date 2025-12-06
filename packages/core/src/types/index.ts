@@ -74,3 +74,6 @@ export interface AppointmentTypeBase {
 }
 
 export type { Request };
+
+// Care model types (Account → CareRecipient → Booking pattern)
+export * from './careModel';

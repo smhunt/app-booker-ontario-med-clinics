@@ -13,6 +13,8 @@ import appointmentTypesRoutes from './routes/public/appointmentTypes';
 import availabilityRoutes from './routes/public/availability';
 import bookingsRoutes from './routes/public/bookings';
 import patientBookingsRoutes from './routes/patient/bookings';
+import accountFamilyMembersRoutes from './routes/account/familyMembers';
+import accountBookingsRoutes from './routes/account/bookings';
 import adminBookingsRoutes from './routes/admin/bookings';
 import adminAuditLogsRoutes from './routes/admin/auditLogs';
 import adminReportsRoutes from './routes/admin/reports';
@@ -223,6 +225,64 @@ const swaggerOptions = {
             timestamp: { type: 'string', format: 'date-time' },
           },
         },
+        FamilyMember: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            dateOfBirth: { type: 'string', format: 'date' },
+            relationship: {
+              type: 'string',
+              enum: ['self', 'child', 'spouse', 'parent', 'sibling', 'grandparent', 'guardian', 'other'],
+            },
+            gender: {
+              type: 'string',
+              enum: ['male', 'female', 'nonbinary', 'prefer_not_to_say'],
+            },
+            postalCode: { type: 'string' },
+            chronicConditions: { type: 'array', items: { type: 'string' } },
+            allergies: { type: 'array', items: { type: 'string' } },
+            canSelfConsent: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        FamilyMemberBooking: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            date: { type: 'string', format: 'date' },
+            time: { type: 'string' },
+            modality: { type: 'string', enum: ['in-person', 'video', 'phone'] },
+            status: { type: 'string', enum: ['pending', 'confirmed', 'cancelled', 'completed'] },
+            reason: { type: 'string' },
+            notes: { type: 'string' },
+            familyMember: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                relationship: { type: 'string' },
+              },
+            },
+            provider: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                specialty: { type: 'string' },
+              },
+            },
+            appointmentType: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                duration: { type: 'integer' },
+              },
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+          },
+        },
       },
     },
   },
@@ -252,8 +312,12 @@ app.use('/appointment-types', appointmentTypesRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/bookings', bookingsRoutes);
 
-// Patient routes (Clerk auth required)
+// Patient routes (Clerk auth required) - Legacy
 app.use('/patient', patientBookingsRoutes);
+
+// Account routes (Clerk auth required) - New Account → FamilyMember model
+app.use('/account/family-members', accountFamilyMembersRoutes);
+app.use('/account/bookings', accountBookingsRoutes);
 
 // Admin routes
 app.use('/admin/bookings', adminBookingsRoutes);
