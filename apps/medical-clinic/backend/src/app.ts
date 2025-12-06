@@ -32,9 +32,26 @@ app.use(cors({
   credentials: true,
 }));
 
-// Body parsing
+// Body parsing with error handling for malformed JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Handle JSON parse errors gracefully (return 400 instead of 500)
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    logger.warn('Malformed JSON in request body', {
+      path: req.path,
+      method: req.method,
+      error: err.message,
+    });
+    res.status(400).json({
+      error: 'Bad Request',
+      message: 'Invalid JSON in request body',
+    });
+    return;
+  }
+  next(err);
+});
 
 // PHI Guard - enforce CANADA_PHIPA_READY flag
 app.use(phiGuard);
