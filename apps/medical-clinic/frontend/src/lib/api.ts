@@ -9,6 +9,11 @@ import type {
   LoginResponse,
   AuditLog,
   ApiError,
+  FamilyMember,
+  PatientAccount,
+  CreateFamilyMemberRequest,
+  FamilyMemberBooking,
+  CreateFamilyMemberBookingRequest,
 } from '../types';
 
 // Dynamic API URL: use same host as frontend, but different port
@@ -193,6 +198,104 @@ export const adminApi = {
     );
     return data;
   },
+};
+
+// Account API (requires Clerk auth)
+// These functions need a getToken function passed in to get the Clerk session token
+export const createAccountApi = (getToken: () => Promise<string | null>) => {
+  const authenticatedRequest = async <T>(
+    method: 'get' | 'post' | 'put' | 'delete',
+    url: string,
+    data?: unknown
+  ): Promise<T> => {
+    const token = await getToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    switch (method) {
+      case 'get':
+        return (await api.get<T>(url, config)).data;
+      case 'post':
+        return (await api.post<T>(url, data, config)).data;
+      case 'put':
+        return (await api.put<T>(url, data, config)).data;
+      case 'delete':
+        return (await api.delete<T>(url, { ...config, data })).data;
+    }
+  };
+
+  return {
+    // Family Members
+    getFamilyMembers: async (): Promise<{
+      account: PatientAccount;
+      familyMembers: FamilyMember[];
+    }> => {
+      return authenticatedRequest('get', '/account/family-members');
+    },
+
+    getFamilyMember: async (id: string): Promise<{ familyMember: FamilyMember }> => {
+      return authenticatedRequest('get', `/account/family-members/${id}`);
+    },
+
+    createFamilyMember: async (
+      data: CreateFamilyMemberRequest
+    ): Promise<{ familyMember: FamilyMember }> => {
+      return authenticatedRequest('post', '/account/family-members', data);
+    },
+
+    updateFamilyMember: async (
+      id: string,
+      data: Partial<CreateFamilyMemberRequest>
+    ): Promise<{ familyMember: FamilyMember }> => {
+      return authenticatedRequest('put', `/account/family-members/${id}`, data);
+    },
+
+    deleteFamilyMember: async (id: string): Promise<{ message: string }> => {
+      return authenticatedRequest('delete', `/account/family-members/${id}`);
+    },
+
+    // Family Member Bookings
+    getBookings: async (params?: {
+      familyMemberId?: string;
+      status?: string;
+      upcoming?: boolean;
+    }): Promise<{
+      account: { id: string; name: string };
+      bookings: FamilyMemberBooking[];
+    }> => {
+      const queryParams = new URLSearchParams();
+      if (params?.familyMemberId) queryParams.set('familyMemberId', params.familyMemberId);
+      if (params?.status) queryParams.set('status', params.status);
+      if (params?.upcoming) queryParams.set('upcoming', 'true');
+
+      const url = `/account/bookings${queryParams.toString() ? `?${queryParams}` : ''}`;
+      return authenticatedRequest('get', url);
+    },
+
+    getBooking: async (id: string): Promise<{ booking: FamilyMemberBooking }> => {
+      return authenticatedRequest('get', `/account/bookings/${id}`);
+    },
+
+    createBooking: async (
+      data: CreateFamilyMemberBookingRequest
+    ): Promise<{ booking: FamilyMemberBooking }> => {
+      return authenticatedRequest('post', '/account/bookings', data);
+    },
+
+    cancelBooking: async (
+      id: string,
+      reason?: string
+    ): Promise<{ message: string; booking: { id: string; status: string } }> => {
+      return authenticatedRequest('delete', `/account/bookings/${id}`, { reason });
+    },
+  };
 };
 
 export default api;

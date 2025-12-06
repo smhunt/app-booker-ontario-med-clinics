@@ -111,3 +111,82 @@ export interface ApiError {
   message?: string;
   details?: unknown;
 }
+
+// Family Member types (Account → CareRecipient model)
+export type FamilyRelationship =
+  | 'self'
+  | 'child'
+  | 'spouse'
+  | 'parent'
+  | 'sibling'
+  | 'grandparent'
+  | 'guardian'
+  | 'other';
+
+export interface FamilyMember {
+  id: string;
+  name: string;
+  dateOfBirth: string;
+  relationship: FamilyRelationship;
+  gender: 'male' | 'female' | 'nonbinary' | 'prefer_not_to_say';
+  postalCode?: string;
+  chronicConditions: string[];
+  allergies: string[];
+  canSelfConsent: boolean;
+  createdAt?: string;
+}
+
+export interface PatientAccount {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export interface CreateFamilyMemberRequest {
+  name: string;
+  dateOfBirth: string;
+  relationship: FamilyRelationship;
+  gender: 'male' | 'female' | 'nonbinary' | 'prefer_not_to_say';
+  healthCardNumber?: string;
+  postalCode?: string;
+  chronicConditions?: string[];
+  allergies?: string[];
+  canSelfConsent?: boolean;
+}
+
+export interface FamilyMemberBooking {
+  id: string;
+  date: string;
+  time: string;
+  modality: 'in-person' | 'video' | 'phone';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  reason?: string;
+  notes?: string;
+  familyMember: {
+    id: string;
+    name: string;
+    relationship: FamilyRelationship;
+  };
+  provider?: {
+    id: string;
+    name: string;
+    specialty?: string;
+  };
+  appointmentType?: {
+    id: string;
+    name: string;
+    duration: number;
+  };
+  createdAt?: string;
+}
+
+export interface CreateFamilyMemberBookingRequest {
+  familyMemberId: string;
+  providerId: string;
+  appointmentTypeId: string;
+  date: string;
+  time: string;
+  modality: 'in-person' | 'video' | 'phone';
+  reason?: string;
+  notes?: string;
+}

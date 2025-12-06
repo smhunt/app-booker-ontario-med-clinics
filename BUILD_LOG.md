@@ -8,11 +8,74 @@ A session-by-session record of development progress on the Online Appointment Bo
 
 | Metric | Value |
 |--------|-------|
-| Total Sessions | 3 |
-| Total User Messages | ~15 |
-| Total Lines of Code | ~8,000+ |
-| Test Count | 81 tests passing |
+| Total Sessions | 4 |
+| Total User Messages | ~20 |
+| Total Lines of Code | ~10,000+ |
+| Test Count | 116 tests passing |
 | Apps | 2 (Medical Clinic, Vet Clinic) |
+
+---
+
+## Session 4 - Dec 6, 2025
+
+**Focus**: Account → FamilyMember model for booking dependents
+
+### Summary
+Implemented the caregiver/dependent booking pattern allowing users to book appointments for themselves and their dependents (children, elderly relatives, etc.). This mirrors the vet clinic's Owner→Pet model and establishes a unified abstraction for code sharing.
+
+### Added
+
+**Shared Core Types** (`packages/core/src/types/careModel.ts`):
+- `AccountBase`, `CareRecipientBase` - abstract base types
+- `PatientAccount`, `FamilyMember`, `MedicalBooking` - medical domain
+- `PetOwnerAccount`, `Pet`, `VetBooking` - vet domain (for future use)
+- Route configuration types for factory functions
+
+**Database Schema** (Medical Clinic):
+- `PatientAccount` model - authenticated user who manages family members
+- `FamilyMember` model - care recipients with relationship types
+- `FamilyMemberBooking` model - appointments linked to family members
+- Migration: `20251206172149_add_family_member_and_iscommon`
+
+**Backend API Routes** (`apps/medical-clinic/backend/src/routes/account/`):
+- `GET/POST /account/family-members` - list and add family members
+- `GET/PUT/DELETE /account/family-members/:id` - manage specific member
+- `GET/POST /account/bookings` - list and create bookings for any family member
+- `DELETE /account/bookings/:id` - cancel bookings
+- Full Swagger/OpenAPI documentation
+
+**Frontend Components** (`apps/medical-clinic/frontend/`):
+- `FamilyMemberSelector` - dropdown to select who appointment is for
+- `AddFamilyMemberForm` - form to add child/parent/spouse
+- `createAccountApi()` - API functions with Clerk auth
+- Types for `FamilyMember`, `FamilyMemberBooking`, etc.
+
+**Seed Data Updates**:
+- 19 patient accounts (adults from 25 patients)
+- 23 family members (19 "self" + 4 sample dependents)
+- Includes children, elderly parents, and spouses as examples
+
+### Technical Details
+
+**Relationship Types Supported**:
+- `self` - account holder booking for themselves
+- `child` - parent booking for minor child
+- `spouse` - booking for husband/wife/partner
+- `parent` - adult child booking for elderly parent
+- `sibling`, `grandparent`, `guardian`, `other`
+
+**Security Features**:
+- All routes require Clerk authentication
+- Account ownership verified before any operation
+- Soft delete for family members (preserves booking history)
+- Cannot delete "self" member from account
+- Cannot change relationship type after creation
+
+### Commits
+- `e0089fc` feat(medical): add Account → FamilyMember model for booking dependents
+
+### Plan Document
+Saved to: `~/.claude/plans/sequential-seeking-adleman.md`
 
 ---
 
@@ -304,6 +367,8 @@ Based on git history, recent work included:
 
 ### Captured Screenshots (Session 4 - Dec 5, 2025)
 
+#### Medical Clinic (OAB System)
+
 | Screenshot | Description |
 |------------|-------------|
 | [01-home-page.png](docs/screenshots/01-home-page.png) | Landing page with "How It Works" steps and compliance notices |
@@ -311,7 +376,17 @@ Based on git history, recent work included:
 | [03-staff-login.png](docs/screenshots/03-staff-login.png) | Staff login page with demo credentials |
 | [04-admin-dashboard-no-data.png](docs/screenshots/04-admin-dashboard-no-data.png) | Admin dashboard (API unavailable in Docker browser) |
 
-**Note**: Screenshots captured using Playwright MCP browser. Some API-dependent views show error states due to Docker networking (browser can't reach localhost:8080).
+#### Veterinary Clinic (Pawsitive Care)
+
+| Screenshot | Description |
+|------------|-------------|
+| [vet-01-home-page.png](docs/screenshots/vet-01-home-page.png) | Landing page with green branding, clinic hours |
+| [vet-02-booking-pet-info.png](docs/screenshots/vet-02-booking-pet-info.png) | 4-step booking wizard with owner & pet info forms |
+| [vet-03-breed-typeahead.png](docs/screenshots/vet-03-breed-typeahead.png) | Breed typeahead showing "Golden Retriever" & "Goldendoodle" suggestions |
+| [vet-04-staff-login.png](docs/screenshots/vet-04-staff-login.png) | Staff login with vet clinic demo credentials |
+| [vet-05-admin-dashboard.png](docs/screenshots/vet-05-admin-dashboard.png) | Admin dashboard with PIPEDA compliance notice |
+
+**Note**: Screenshots captured using Playwright MCP browser. Some API-dependent views show error states due to Docker networking (browser can't reach localhost).
 
 ---
 
