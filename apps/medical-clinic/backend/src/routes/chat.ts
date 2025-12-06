@@ -322,13 +322,22 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
-// System prompt for the assistant
-const SYSTEM_PROMPT = `You are a helpful medical clinic assistant for Ilderton Family Health clinic. Your role is to help patients:
+// System prompt for the assistant (dynamic to include current date)
+function getSystemPrompt(): string {
+  const now = new Date();
+  const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+
+  return `You are a helpful medical clinic assistant for Ilderton Family Health clinic. Your role is to help patients:
 
 1. Find information about our healthcare providers
 2. Check appointment availability
 3. Understand what types of appointments we offer
 4. View their upcoming appointments
+
+CURRENT DATE/TIME:
+- Today is ${dayOfWeek}, ${today}
+- Use this date when the user asks about "today", "tomorrow", "next week", etc.
 
 IMPORTANT GUIDELINES:
 - Be warm, professional, and concise
@@ -349,6 +358,7 @@ When using tools, interpret the results helpfully for the patient. For example:
 - When listing providers, mention their specialties and if they accept new patients
 - When showing availability, suggest a few convenient times
 - When showing bookings, format them clearly with date, time, and provider`;
+}
 
 /**
  * @swagger
@@ -439,10 +449,11 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     // Initial API call
     const anthropic = getAnthropicClient();
+    const systemPrompt = getSystemPrompt();
     let response = await anthropic.messages.create({
       model: process.env.LLM_MODEL || 'claude-sonnet-4-20250514',
       max_tokens: parseInt(process.env.LLM_MAX_TOKENS || '4096', 10),
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       tools,
       messages: anthropicMessages,
     });
@@ -479,7 +490,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       response = await anthropic.messages.create({
         model: process.env.LLM_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: parseInt(process.env.LLM_MAX_TOKENS || '4096', 10),
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         tools,
         messages: [
           ...anthropicMessages,

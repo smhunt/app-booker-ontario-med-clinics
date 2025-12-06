@@ -124,6 +124,8 @@ export function ChatWidget() {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setIsLoading(false);
+      // Re-focus input after response
+      setTimeout(() => inputRef.current?.focus(), 0);
     }
   };
 
