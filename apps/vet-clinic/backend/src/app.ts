@@ -26,10 +26,10 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3002';
+// CORS configuration - allow any origin in development for LAN access
+const isDev = process.env.NODE_ENV !== 'production';
 app.use(cors({
-  origin: corsOrigin,
+  origin: isDev ? true : (process.env.CORS_ORIGIN || 'http://localhost:3002').split(','),
   credentials: true,
 }));
 

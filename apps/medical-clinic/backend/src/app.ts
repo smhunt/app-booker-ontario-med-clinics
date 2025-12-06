@@ -25,12 +25,10 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
-// Also allow host.docker.internal for Docker-based browser testing
-corsOrigins.push('http://host.docker.internal:3001', 'http://host.docker.internal:3000');
+// CORS configuration - allow any origin in development for LAN access
+const isDev = process.env.NODE_ENV !== 'production';
 app.use(cors({
-  origin: corsOrigins,
+  origin: isDev ? true : (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
   credentials: true,
 }));
 

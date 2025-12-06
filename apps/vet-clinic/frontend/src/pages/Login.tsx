@@ -2,6 +2,62 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      // Try modern Clipboard API first (requires HTTPS or localhost)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for HTTP on LAN IPs
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    } catch (err) {
+      console.warn('Copy to clipboard failed, please copy manually:', err);
+    }
+    // Always show feedback to user
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="ml-2 px-2 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded transition-colors"
+      title={`Copy ${label}`}
+    >
+      {copied ? '✓' : 'Copy'}
+    </button>
+  );
+}
+
+function CredentialRow({ role, email, password }: { role: string; email: string; password: string }) {
+  return (
+    <div className="flex flex-col gap-1 py-1">
+      <div className="font-medium text-gray-700">{role}:</div>
+      <div className="flex items-center text-xs text-gray-600 pl-2">
+        <span className="font-mono">{email}</span>
+        <CopyButton text={email} label="email" />
+      </div>
+      <div className="flex items-center text-xs text-gray-600 pl-2">
+        <span className="font-mono">{password}</span>
+        <CopyButton text={password} label="password" />
+      </div>
+    </div>
+  );
+}
+
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -91,13 +147,9 @@ export function Login() {
 
         {/* Demo credentials */}
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500 font-medium mb-2">Demo Credentials:</p>
-          <p className="text-xs text-gray-600">
-            Admin: admin@vetclinic-demo.ca / Admin123!
-          </p>
-          <p className="text-xs text-gray-600">
-            Staff: staff@vetclinic-demo.ca / Staff123!
-          </p>
+          <p className="text-sm text-gray-500 font-medium mb-2">Demo Credentials:</p>
+          <CredentialRow role="Admin" email="admin@vetclinic-demo.ca" password="Admin123!" />
+          <CredentialRow role="Staff" email="staff@vetclinic-demo.ca" password="Staff123!" />
         </div>
       </div>
     </div>

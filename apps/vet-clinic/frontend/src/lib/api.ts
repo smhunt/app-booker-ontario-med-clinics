@@ -13,7 +13,18 @@ import type {
   ApiError,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
+// Dynamic API URL: use same host as frontend, but different port
+const getApiBaseUrl = () => {
+  // If explicitly set via env var, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Otherwise, derive from current window location (supports LAN access)
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}:8081`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
