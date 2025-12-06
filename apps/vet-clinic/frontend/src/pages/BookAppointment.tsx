@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format, addDays } from 'date-fns';
 import { publicApi } from '../lib/api';
@@ -19,6 +19,7 @@ export function BookAppointment() {
   const [step, setStep] = useState<Step>('pet');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSignIn, setShowSignIn] = useState(false);
 
   // Data from API
   const [veterinarians, setVeterinarians] = useState<Veterinarian[]>([]);
@@ -172,26 +173,46 @@ export function BookAppointment() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold mb-4">Your Information</h2>
 
-            {/* Clerk Sign In for returning pet owners */}
-            <div className="mb-6">
+            {/* Clerk Sign In for returning pet owners - collapsible on mobile */}
+            <div className="mb-4">
               <SignedOut>
-                <div className="p-4 bg-primary-50 rounded-lg mb-4">
-                  <p className="text-sm text-primary-800 mb-2">
-                    Have an account? Sign in to use your saved information.
-                  </p>
-                  <SignIn
-                    fallback={
-                      <p className="text-sm text-gray-500">
-                        Continue as a guest below.
-                      </p>
-                    }
-                  />
-                </div>
+                {!showSignIn ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowSignIn(true)}
+                    className="w-full p-3 bg-primary-50 border border-primary-200 rounded-lg text-sm text-primary-700 hover:bg-primary-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>Have an account? Sign in to use saved info</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <div className="p-4 bg-primary-50 rounded-lg border border-primary-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm text-primary-800 font-medium">Sign in</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowSignIn(false)}
+                        className="text-primary-600 hover:text-primary-800 text-sm"
+                      >
+                        Continue as guest
+                      </button>
+                    </div>
+                    <SignIn
+                      fallback={
+                        <p className="text-sm text-gray-500">
+                          Sign-in unavailable. Continue as guest below.
+                        </p>
+                      }
+                    />
+                  </div>
+                )}
               </SignedOut>
               <SignedIn>
-                <div className="p-4 bg-green-50 rounded-lg mb-4">
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                   <p className="text-sm text-green-800">
-                    Signed in as {user?.emailAddresses?.[0]?.emailAddress}
+                    ✓ Signed in as {user?.emailAddresses?.[0]?.emailAddress}
                   </p>
                 </div>
               </SignedIn>
