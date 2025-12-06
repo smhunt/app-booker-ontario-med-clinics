@@ -81,6 +81,29 @@ const tools: Anthropic.Messages.Tool[] = [
     },
   },
   {
+    name: 'check_availability_multi',
+    description: 'Check available time slots for a provider across multiple dates at once. Use this instead of calling check_availability multiple times. Returns availability summary for each date.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        providerId: {
+          type: 'string',
+          description: 'The UUID of the provider',
+        },
+        dates: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of dates to check in YYYY-MM-DD format (max 7 dates)',
+        },
+        appointmentTypeId: {
+          type: 'string',
+          description: 'Optional appointment type UUID to filter by duration requirements',
+        },
+      },
+      required: ['providerId', 'dates'],
+    },
+  },
+  {
     name: 'get_user_bookings',
     description: 'Get the current user\'s upcoming appointments. Use this when user asks about their scheduled appointments.',
     input_schema: {
@@ -92,6 +115,49 @@ const tools: Anthropic.Messages.Tool[] = [
         },
       },
       required: [],
+    },
+  },
+  {
+    name: 'book_appointment',
+    description: 'Book an appointment for a patient. Use this after confirming all details with the user: provider, date, time, appointment type, and modality. For demo purposes, creates a booking with a demo patient.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        providerId: {
+          type: 'string',
+          description: 'The UUID of the provider',
+        },
+        date: {
+          type: 'string',
+          description: 'The appointment date in YYYY-MM-DD format',
+        },
+        time: {
+          type: 'string',
+          description: 'The appointment time in HH:MM format (24-hour)',
+        },
+        appointmentTypeId: {
+          type: 'string',
+          description: 'The UUID of the appointment type',
+        },
+        modality: {
+          type: 'string',
+          enum: ['in-person', 'video', 'phone'],
+          description: 'How the appointment will be conducted',
+        },
+        reason: {
+          type: 'string',
+          description: 'Optional reason for the visit',
+        },
+        patientName: {
+          type: 'string',
+          description: 'Name of the patient (for demo bookings)',
+        },
+        patientEmail: {
+          type: 'string',
+          description: 'Email of the patient (for demo bookings)',
+        },
+      },
+      required: ['providerId', 'date', 'time', 'appointmentTypeId', 'modality'],
     },
   },
 ];
@@ -206,6 +272,119 @@ async function executeCheckAvailability(providerId: string, date: string, appoin
   };
 }
 
+// Batch availability check for multiple dates (more efficient than calling check_availability multiple times)
+async function executeCheckAvailabilityMulti(
+  providerId: string,
+  dates: string[],
+  appointmentTypeId?: string
+) {
+  // Limit to 7 dates max
+  const limitedDates = dates.slice(0, 7);
+
+  // Get provider's working hours (single query)
+  const provider = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: { workingHours: true, name: true },
+  });
+
+  if (!provider) {
+    return { error: 'Provider not found' };
+  }
+
+  // Get appointment type duration if specified (single query)
+  let duration = 15;
+  if (appointmentTypeId) {
+    const aptType = await prisma.appointmentType.findUnique({
+      where: { id: appointmentTypeId },
+      select: { duration: true },
+    });
+    if (aptType) duration = aptType.duration;
+  }
+
+  // Get all existing bookings for all dates in one query
+  const startDate = new Date(Math.min(...limitedDates.map(d => new Date(d).getTime())));
+  const endDate = new Date(Math.max(...limitedDates.map(d => new Date(d).getTime())));
+  endDate.setDate(endDate.getDate() + 1); // Include the last date
+
+  const existingBookings = await prisma.booking.findMany({
+    where: {
+      providerId,
+      date: { gte: startDate, lt: endDate },
+      status: { in: ['pending', 'confirmed'] },
+    },
+    select: { date: true, time: true },
+  });
+
+  // Group bookings by date
+  const bookingsByDate = new Map<string, Set<string>>();
+  for (const booking of existingBookings) {
+    const dateStr = booking.date.toISOString().split('T')[0];
+    if (!bookingsByDate.has(dateStr)) {
+      bookingsByDate.set(dateStr, new Set());
+    }
+    bookingsByDate.get(dateStr)!.add(booking.time);
+  }
+
+  const workingHours = provider.workingHours as Record<string, string[]> | null;
+
+  // Generate availability for each date
+  const availability = limitedDates.map(date => {
+    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    if (!workingHours || !workingHours[dayOfWeek]) {
+      return {
+        date,
+        dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
+        available: false,
+        slots: [],
+        totalAvailable: 0,
+        message: 'Provider is not available on this day',
+      };
+    }
+
+    const [startTime, endTime] = workingHours[dayOfWeek];
+    const bookedTimes = bookingsByDate.get(date) || new Set<string>();
+
+    // Generate available slots
+    const slots: string[] = [];
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    let currentMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+
+    while (currentMinutes + duration <= endMinutes) {
+      const hours = Math.floor(currentMinutes / 60);
+      const mins = currentMinutes % 60;
+      const timeStr = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+
+      if (!bookedTimes.has(timeStr)) {
+        slots.push(timeStr);
+      }
+
+      currentMinutes += 15;
+    }
+
+    return {
+      date,
+      dayOfWeek: dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1),
+      available: slots.length > 0,
+      slots,
+      totalAvailable: slots.length,
+      // Provide a summary for quick display
+      summary: slots.length > 0
+        ? `${slots.length} slots (${slots[0]} - ${slots[slots.length - 1]})`
+        : 'No availability',
+    };
+  });
+
+  return {
+    providerName: provider.name,
+    availability,
+    totalDatesWithAvailability: availability.filter(a => a.available).length,
+  };
+}
+
 async function executeGetUserBookings(clerkUserId?: string) {
   if (!clerkUserId) {
     return { error: 'User not authenticated', bookings: [] };
@@ -282,6 +461,161 @@ async function executeGetUserBookings(clerkUserId?: string) {
   };
 }
 
+interface BookAppointmentInput {
+  providerId: string;
+  date: string;
+  time: string;
+  appointmentTypeId: string;
+  modality: 'in-person' | 'video' | 'phone';
+  reason?: string;
+  patientName?: string;
+  patientEmail?: string;
+}
+
+async function executeBookAppointment(input: BookAppointmentInput, clerkUserId?: string) {
+  const { providerId, date, time, appointmentTypeId, modality, reason } = input;
+
+  // Check authentication - require sign-in to book
+  if (!clerkUserId) {
+    return {
+      success: false,
+      requiresAuth: true,
+      error: 'Please sign in to book an appointment. Click the "Sign In" button below to continue.',
+    };
+  }
+
+  // Validate provider exists
+  const provider = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: { id: true, name: true },
+  });
+
+  if (!provider) {
+    return { success: false, error: 'Provider not found. Please select a valid provider.' };
+  }
+
+  // Validate appointment type exists
+  const appointmentType = await prisma.appointmentType.findUnique({
+    where: { id: appointmentTypeId },
+    select: { id: true, name: true, duration: true },
+  });
+
+  if (!appointmentType) {
+    return { success: false, error: 'Appointment type not found. Please select a valid appointment type.' };
+  }
+
+  // Check if the time slot is still available
+  const existingBooking = await prisma.booking.findFirst({
+    where: {
+      providerId,
+      date: new Date(date),
+      time,
+      status: { in: ['pending', 'confirmed'] },
+    },
+  });
+
+  if (existingBooking) {
+    return {
+      success: false,
+      error: 'This time slot is no longer available. Please choose a different time.'
+    };
+  }
+
+  // Find patient by Clerk user ID
+  let patient = await prisma.patient.findFirst({
+    where: { clerkUserId },
+  });
+
+  // If no patient record linked to Clerk, try to find by PatientAccount
+  if (!patient) {
+    const account = await prisma.patientAccount.findUnique({
+      where: { clerkUserId },
+      include: {
+        familyMembers: {
+          where: { relationship: 'self', isActive: true },
+          take: 1,
+        },
+      },
+    });
+
+    // For now, use a demo patient if no account exists
+    // In production, would require account setup first
+    if (!account) {
+      patient = await prisma.patient.findFirst({
+        orderBy: { createdAt: 'asc' },
+      });
+    }
+  }
+
+  if (!patient) {
+    return {
+      success: false,
+      error: 'No patient record found. Please complete your profile setup first.'
+    };
+  }
+
+  // Create the booking
+  const booking = await prisma.booking.create({
+    data: {
+      providerId,
+      patientId: patient.id,
+      appointmentTypeId,
+      date: new Date(date),
+      time,
+      modality,
+      status: 'confirmed', // Auto-confirm for demo
+      reason: reason || null,
+    },
+  });
+
+  // Log the booking for audit
+  await prisma.auditLog.create({
+    data: {
+      action: 'create_booking',
+      resource: 'booking',
+      resourceId: booking.id,
+      payload: {
+        providerId,
+        date,
+        time,
+        modality,
+        appointmentType: appointmentType.name,
+        bookedVia: 'chat_assistant',
+      },
+      userRole: 'patient',
+    },
+  });
+
+  // Format the confirmation
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  return {
+    success: true,
+    booking: {
+      id: booking.id,
+      provider: provider.name,
+      date: formattedDate,
+      time: formattedTime,
+      appointmentType: appointmentType.name,
+      duration: `${appointmentType.duration} minutes`,
+      modality,
+      status: 'confirmed',
+    },
+    message: `Your appointment has been booked successfully!`,
+  };
+}
+
 // Execute tool call
 async function executeTool(name: string, input: Record<string, unknown>, clerkUserId?: string): Promise<unknown> {
   switch (name) {
@@ -295,8 +629,16 @@ async function executeTool(name: string, input: Record<string, unknown>, clerkUs
         input.date as string,
         input.appointmentTypeId as string | undefined
       );
+    case 'check_availability_multi':
+      return executeCheckAvailabilityMulti(
+        input.providerId as string,
+        input.dates as string[],
+        input.appointmentTypeId as string | undefined
+      );
     case 'get_user_bookings':
       return executeGetUserBookings(clerkUserId);
+    case 'book_appointment':
+      return executeBookAppointment(input as BookAppointmentInput, clerkUserId);
     default:
       return { error: `Unknown tool: ${name}` };
   }
@@ -328,64 +670,31 @@ function getSystemPrompt(): string {
   const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD format
   const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
 
-  return `You are a helpful medical clinic assistant for Ilderton Family Health clinic. Your role is to help patients:
+  return `You are the Ilderton Family Health clinic assistant. Today is ${dayOfWeek}, ${today}.
 
-1. Find information about our healthcare providers
-2. Check appointment availability
-3. Understand what types of appointments we offer
-4. View their upcoming appointments
+STYLE: Be brief and conversational. The UI shows clickable buttons for providers, times, and options - so DON'T repeat lists in text. Just add a short intro like "Our doctors:" or "Available times:".
 
-CURRENT DATE/TIME:
-- Today is ${dayOfWeek}, ${today}
-- Use this date when the user asks about "today", "tomorrow", "next week", etc.
+BAD (too verbose):
+"Here are our providers: 1. Dr. Smith - Family Medicine 2. Dr. Jones - Family Medicine. Reply with a number..."
 
-RESPONSE FORMAT - ALWAYS USE NUMBERED OPTIONS:
-- When presenting choices, ALWAYS use numbered lists (1, 2, 3, etc.)
-- Keep options concise - users can just reply with a number
-- For providers: "1. Dr. Smith  2. Dr. Jones  3. Dr. Lee"
-- For times: "1. 9:00 AM  2. 10:30 AM  3. 2:00 PM"
-- For dates: "1. Monday Dec 9  2. Tuesday Dec 10  3. Wednesday Dec 11"
-- End with: "Reply with a number or describe what you need."
-- This makes it easy for users to respond quickly without typing full names/times
+GOOD (concise):
+"Our doctors:" [UI shows clickable list]
 
-CRITICAL - TRACKING IDs FOR NUMBERED OPTIONS:
-When you call list_providers or other tools that return items with IDs, you MUST:
-1. Present the options to the user with numbers (1, 2, 3, etc.)
-2. REMEMBER the mapping between numbers and actual UUIDs from the tool results
-3. When user responds with a number, use the ACTUAL UUID from the original tool results
-4. For example, if list_providers returns:
-   [{"id": "abc-123", "name": "Dr. Smith"}, {"id": "def-456", "name": "Dr. Jones"}]
-   And you show: "1. Dr. Smith  2. Dr. Jones"
-   When user says "2", you must use providerId "def-456" (NOT "2" or "def-456-id")
+GOOD (with context):
+"Dr. Smith has openings Monday:" [UI shows time slots]
 
-HANDLING NUMBER RESPONSES:
-- The welcome message shows: 1. Find a doctor  2. Check availability  3. View my appointments  4. See appointment types
-- If user replies "1", call list_providers tool
-- If user replies "2", ask which provider/date for availability
-- If user replies "3", fetch their upcoming appointments with get_user_bookings
-- If user replies "4", call list_appointment_types tool
-- ALWAYS interpret single number responses as selections from the most recent numbered list
-- When mapping a number to a provider/appointment type, use the ACTUAL ID from previous tool results
+BOOKING FLOW:
+1. Provider → 2. Appointment type → 3. Date/time → 4. Confirm → 5. Book (requires sign-in)
 
-IMPORTANT GUIDELINES:
-- Be warm, professional, and concise
-- Never provide medical advice - always recommend they speak with their healthcare provider
-- For booking appointments, guide them through the process step by step
-- If they want to book, first help them choose a provider, then a date, then show available times
-- Always confirm details before proceeding
-- Respect patient privacy - never ask for sensitive health information in chat
-- If they have urgent medical concerns, advise them to call 911 or visit the ER
+Use check_availability_multi for multiple dates at once (more efficient).
 
-CLINIC INFO:
-- Name: Ilderton Family Health - Demo
-- Hours: Mon-Thu 9:00-16:00, Fri 9:00-15:30
-- Location: Middlesex Centre, Ontario (fictional demo clinic)
-- All data is synthetic/demo only
+If book_appointment returns {requiresAuth: true}, say "Please sign in to complete your booking."
 
-When using tools, interpret the results helpfully for the patient. For example:
-- When listing providers, show as numbered options with specialty
-- When showing availability, pick 5-6 good time slots as numbered options
-- When showing bookings, format them clearly with date, time, and provider`;
+RULES:
+- No medical advice - direct to their provider
+- Urgent issues → call 911 or ER
+- Clinic hours: Mon-Thu 9-4, Fri 9-3:30
+- Keep responses under 2-3 sentences when UI components are shown`;
 }
 
 /**
@@ -540,9 +849,33 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       responseLength: assistantResponse.length,
     });
 
+    // Generate UI component hints based on tool results
+    const uiComponents: Array<{ type: string; data: unknown }> = [];
+
+    for (const tr of toolResults) {
+      if (tr.tool === 'list_providers' && Array.isArray(tr.result)) {
+        uiComponents.push({ type: 'provider-select', data: tr.result });
+      } else if (tr.tool === 'list_appointment_types' && Array.isArray(tr.result)) {
+        uiComponents.push({ type: 'appointment-types', data: tr.result });
+      } else if (tr.tool === 'check_availability') {
+        const availResult = tr.result as { slots?: string[]; providerName?: string; date?: string };
+        if (availResult.slots) {
+          uiComponents.push({
+            type: 'time-grid',
+            data: {
+              slots: availResult.slots.map((time: string) => ({ time, available: true })),
+              providerName: availResult.providerName,
+              date: availResult.date,
+            },
+          });
+        }
+      }
+    }
+
     res.json({
       response: assistantResponse,
       toolResults: toolResults.length > 0 ? toolResults : undefined,
+      uiComponents: uiComponents.length > 0 ? uiComponents : undefined,
     });
 
   } catch (error: unknown) {
