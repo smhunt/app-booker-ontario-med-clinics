@@ -10,16 +10,28 @@ const prisma = new PrismaClient();
 // All routes require Clerk authentication
 router.use(requirePatientWithInfo);
 
-// Validation schemas
+// Validation schemas with security constraints
 const createBookingSchema = z.object({
   familyMemberId: z.string().uuid('Invalid family member ID'),
   providerId: z.string().uuid('Invalid provider ID'),
   appointmentTypeId: z.string().uuid('Invalid appointment type ID'),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format'),
+  date: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format')
+    .refine((str) => new Date(str) >= new Date(new Date().toDateString()), 'Cannot book in the past'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM format'),
   modality: z.enum(['in-person', 'video', 'phone']),
-  reason: z.string().optional(),
-  notes: z.string().optional(),
+  reason: z.string().max(500, 'Reason too long').optional(),
+  notes: z.string().max(1000, 'Notes too long').optional(),
+});
+
+const listBookingsQuerySchema = z.object({
+  familyMemberId: z.string().uuid('Invalid family member ID').optional(),
+  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+  upcoming: z.enum(['true', 'false']).optional(),
+});
+
+const cancelBookingSchema = z.object({
+  reason: z.string().max(500, 'Cancellation reason too long').optional(),
 });
 
 /**
@@ -69,12 +81,22 @@ const createBookingSchema = z.object({
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const clerkPatient = getPatientFromClerk(req);
-    const { familyMemberId, status, upcoming } = req.query;
 
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
+
+    // Validate query parameters
+    const queryResult = listBookingsQuerySchema.safeParse(req.query);
+    if (!queryResult.success) {
+      res.status(400).json({
+        error: 'Invalid query parameters',
+        details: queryResult.error.errors,
+      });
+      return;
+    }
+    const { familyMemberId, status, upcoming } = queryResult.data;
 
     // Find the account
     const account = await prisma.patientAccount.findFirst({
@@ -106,7 +128,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     };
 
     if (status) {
-      whereClause.status = status as string;
+      whereClause.status = status;
     }
 
     if (upcoming === 'true') {
@@ -397,6 +419,12 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     const clerkPatient = getPatientFromClerk(req);
     const bookingId = req.params.id;
 
+    // Validate UUID format
+    if (!z.string().uuid().safeParse(bookingId).success) {
+      res.status(400).json({ error: 'Invalid booking ID format' });
+      return;
+    }
+
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });
       return;
@@ -524,7 +552,23 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const clerkPatient = getPatientFromClerk(req);
     const bookingId = req.params.id;
-    const cancellationReason = req.body.reason || 'Cancelled by patient';
+
+    // Validate UUID format
+    if (!z.string().uuid().safeParse(bookingId).success) {
+      res.status(400).json({ error: 'Invalid booking ID format' });
+      return;
+    }
+
+    // Validate cancellation reason
+    const bodyResult = cancelBookingSchema.safeParse(req.body);
+    if (!bodyResult.success) {
+      res.status(400).json({
+        error: 'Invalid input',
+        details: bodyResult.error.errors,
+      });
+      return;
+    }
+    const cancellationReason = bodyResult.data.reason || 'Cancelled by patient';
 
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });

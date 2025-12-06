@@ -10,16 +10,22 @@ const prisma = new PrismaClient();
 // All routes require Clerk authentication
 router.use(requirePatientWithInfo);
 
-// Validation schemas
+// Validation schemas with security constraints
 const familyMemberSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  dateOfBirth: z.string().transform((str) => new Date(str)),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  dateOfBirth: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format')
+    .transform((str) => new Date(str))
+    .refine((date) => date <= new Date(), 'Date of birth cannot be in the future'),
   relationship: z.enum(['self', 'child', 'spouse', 'parent', 'sibling', 'grandparent', 'guardian', 'other']),
   gender: z.enum(['male', 'female', 'nonbinary', 'prefer_not_to_say']),
-  healthCardNumber: z.string().optional(),
-  postalCode: z.string().optional(),
-  chronicConditions: z.array(z.string()).default([]),
-  allergies: z.array(z.string()).default([]),
+  healthCardNumber: z.string().max(20).optional(), // Ontario OHIP: 10 digits + version code
+  postalCode: z.string()
+    .regex(/^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/, 'Invalid Canadian postal code')
+    .optional()
+    .or(z.literal('')), // Allow empty string
+  chronicConditions: z.array(z.string().max(100)).max(20).default([]),
+  allergies: z.array(z.string().max(100)).max(20).default([]),
   canSelfConsent: z.boolean().default(true),
 });
 
@@ -315,6 +321,12 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     const clerkPatient = getPatientFromClerk(req);
     const familyMemberId = req.params.id;
 
+    // Validate UUID format
+    if (!z.string().uuid().safeParse(familyMemberId).success) {
+      res.status(400).json({ error: 'Invalid family member ID format' });
+      return;
+    }
+
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });
       return;
@@ -419,6 +431,12 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const clerkPatient = getPatientFromClerk(req);
     const familyMemberId = req.params.id;
+
+    // Validate UUID format
+    if (!z.string().uuid().safeParse(familyMemberId).success) {
+      res.status(400).json({ error: 'Invalid family member ID format' });
+      return;
+    }
 
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });
@@ -549,6 +567,12 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const clerkPatient = getPatientFromClerk(req);
     const familyMemberId = req.params.id;
+
+    // Validate UUID format
+    if (!z.string().uuid().safeParse(familyMemberId).success) {
+      res.status(400).json({ error: 'Invalid family member ID format' });
+      return;
+    }
 
     if (!clerkPatient?.clerkUserId || !clerkPatient?.email) {
       res.status(401).json({ error: 'Authentication required' });
