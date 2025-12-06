@@ -71,8 +71,22 @@ Implemented the caregiver/dependent booking pattern allowing users to book appoi
 - Cannot delete "self" member from account
 - Cannot change relationship type after creation
 
+**Input Validation (Zod)**:
+- Name max length: 100 characters
+- Reason max length: 500 characters
+- Notes max length: 1000 characters
+- UUID validation for all ID parameters
+- Date format validation (YYYY-MM-DD)
+- DOB validation (cannot be in future)
+- Booking date validation (cannot be in past)
+- Canadian postal code regex validation
+- Query param validation for listing endpoints
+- Health card numbers stored but not exposed in responses
+
 ### Commits
 - `e0089fc` feat(medical): add Account → FamilyMember model for booking dependents
+- `5c5079a` feat(frontend): add family member selector UI components
+- `d9c36ba` security(api): add input validation to account routes
 
 ### Plan Document
 Saved to: `~/.claude/plans/sequential-seeking-adleman.md`
