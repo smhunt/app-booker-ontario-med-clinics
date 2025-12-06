@@ -150,8 +150,8 @@ export function Login() {
           <p className="text-sm font-semibold text-gray-700 mb-2">
             Demo Credentials:
           </p>
-          <CredentialRow role="Admin" email="admin@ildertonhealth-demo.ca" password="Admin123" />
-          <CredentialRow role="Staff" email="staff@ildertonhealth-demo.ca" password="Staff123" />
+          <CredentialRow role="Admin" email="admin@ildertonhealth-demo.ca" password="Admin123!" />
+          <CredentialRow role="Staff" email="staff@ildertonhealth-demo.ca" password="Staff123!" />
         </div>
       </div>
     </div>

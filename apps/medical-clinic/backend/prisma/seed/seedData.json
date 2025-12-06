@@ -495,7 +495,7 @@
     {"name": "Palliative Care Consultation", "duration": 30, "description": "End-of-life care planning"}
   ],
   "adminUsers": [
-    {"email": "admin@ildertonhealth-demo.ca", "password": "Admin123", "role": "admin", "name": "System Administrator"},
-    {"email": "staff@ildertonhealth-demo.ca", "password": "Staff123", "role": "staff", "name": "Clinical Staff"}
+    {"email": "admin@ildertonhealth-demo.ca", "password": "Admin123!", "role": "admin", "name": "System Administrator"},
+    {"email": "staff@ildertonhealth-demo.ca", "password": "Staff123!", "role": "staff", "name": "Clinical Staff"}
   ]
 }
