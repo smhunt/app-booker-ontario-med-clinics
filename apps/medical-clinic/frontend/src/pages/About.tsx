@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
 
+// Get the current host to make links work from any IP (LAN access)
+const getClinicUrl = (port: number) => {
+  const host = window.location.hostname;
+  return `http://${host}:${port}`;
+};
+
 export function About() {
   return (
     <div className="max-w-4xl mx-auto space-y-12">
@@ -113,7 +119,7 @@ export function About() {
           <h3 className="text-lg font-medium text-gray-800">Available Now</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <a
-              href="http://localhost:3001"
+              href={getClinicUrl(3001)}
               className="block bg-white rounded-lg border-2 border-primary-200 p-5 hover:border-primary-400 hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-3 mb-2">
@@ -127,11 +133,11 @@ export function About() {
                 Family medicine clinics with PHIPA compliance, patient rostering,
                 and caregiver booking for dependents.
               </p>
-              <p className="text-xs text-primary-600 mt-2">localhost:3001</p>
+              <p className="text-xs text-primary-600 mt-2">{window.location.hostname}:3001</p>
             </a>
 
             <a
-              href="http://localhost:3002"
+              href={getClinicUrl(3002)}
               className="block bg-white rounded-lg border-2 border-green-200 p-5 hover:border-green-400 hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-3 mb-2">
@@ -145,7 +151,7 @@ export function About() {
                 Pet care clinics with PIPEDA compliance, multi-pet management,
                 breed database, and species-specific appointments.
               </p>
-              <p className="text-xs text-green-600 mt-2">localhost:3002</p>
+              <p className="text-xs text-green-600 mt-2">{window.location.hostname}:3002</p>
             </a>
           </div>
 
